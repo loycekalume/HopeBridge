@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "../../styles/signup.css";
+import { Link } from "react-router-dom";
 
 interface Role {
   key: string;
@@ -137,7 +138,9 @@ export default function Signup() {
             </form>
           </>
         )}
-
+     <div className="signup-subtitle">
+  Already have an account? <Link to="/login">Login</Link>
+</div>
         <div className="footer-icon">🤲</div>
       </div>
     </div>
