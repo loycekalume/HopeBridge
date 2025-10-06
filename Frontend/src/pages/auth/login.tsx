@@ -71,7 +71,7 @@ export default function Login() {
                     <button type="submit">Login</button>
                 </form>
                 <div className="signup-subtitle">
-                    Don’t have an account? <Link to="/">Sign Up</Link>
+                    Don’t have an account? <Link to="/signup">Sign Up</Link>
                 </div>
                 <div className="footer-icon">
                     <img
