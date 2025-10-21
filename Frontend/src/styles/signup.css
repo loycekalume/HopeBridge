@@ -63,7 +63,47 @@ body {
   color: #666;
   margin-bottom: 25px;
 }
+/* --- Role Display and Change Link Styling --- */
 
+/* Style for the subtitle containing the selected role */
+.signup-subtitle {
+    color: var(--light-text); /* Use a standard subtitle color (e.g., #6c757d) */
+    font-size: 1em;
+    margin-top: 10px;
+    margin-bottom: 25px; /* Add space above the form */
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Center the subtitle content */
+    text-align: center;
+}
+
+/* Style for the actual role name (e.g., "Individual Donor") */
+.signup-subtitle {
+    /* If you want the role label itself to stand out more than the subtitle */
+    font-weight: 500;
+    color: var(--text-color); /* Make the main text darker/more prominent */
+}
+
+/* Style for the entire " (Change)" span */
+.back-link {
+    font-size: 0.8em; /* Slightly smaller text for the link */
+    margin-left: 8px; /* Space between the role name and the link */
+    color: var(--primary-blue); /* Use the HopeBridge primary blue for links */
+    cursor: pointer;
+    font-weight: 400;
+    transition: color 0.2s;
+}
+
+/* Style for the link text itself (inside the span) */
+.back-link:hover {
+    text-decoration: underline;
+    color: #0056b3; 
+}
+
+
+.signup-subtitle .back-link {
+    text-decoration: none; 
+}
 /* Role Options */
 .options {
   display: grid;

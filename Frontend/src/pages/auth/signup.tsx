@@ -1,45 +1,22 @@
 import { useState } from "react";
 import "../../styles/signup.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // <-- Keep necessary imports
+
+// The useAuth hook import is REMOVED here, as it's not needed for signup.
 
 interface Role {
   key: string;
   label: string;
   desc: string;
-  icon: string; 
+  icon: string;
 }
 
 const roles: Role[] = [
-  {
-    key: "donor",
-    label: "Individual Donor",
-    desc: "Donate resources to those in need",
-    icon: "https://img.icons8.com/fluency/48/like.png",
-  },
-  {
-    key: "company",
-    label: "Company",
-    desc: "Corporate donations & sponsorships",
-    icon: "https://img.icons8.com/fluency/48/company.png",
-  },
-  {
-    key: "beneficiary",
-    label: "Beneficiary",
-    desc: "Request assistance & resources",
-    icon: "https://img.icons8.com/fluency/48/helping-hand.png",
-  },
-  {
-    key: "organizer",
-    label: "Organizer",
-    desc: "Verify & coordinate distributions",
-    icon: "https://img.icons8.com/fluency/48/management.png",
-  },
-  {
-    key: "community",
-    label: "Community Group",
-    desc: "Volunteer & provide services",
-    icon: "https://img.icons8.com/fluency/48/group.png",
-  },
+  { key: "donor", label: "Individual Donor", desc: "Donate resources to those in need", icon: "https://img.icons8.com/fluency/48/like.png" },
+  { key: "company", label: "Company", desc: "Corporate donations & sponsorships", icon: "https://img.icons8.com/fluency/48/company.png" },
+  { key: "beneficiary", label: "Beneficiary", desc: "Request assistance & resources", icon: "https://img.icons8.com/fluency/48/helping-hand.png" },
+  { key: "organizer", label: "Organizer", desc: "Verify & coordinate distributions", icon: "https://img.icons8.com/fluency/48/management.png" },
+  { key: "community", label: "Community Group", desc: "Volunteer & provide services", icon: "https://img.icons8.com/fluency/48/group.png" },
 ];
 
 export default function Signup() {
@@ -50,14 +27,25 @@ export default function Signup() {
     phone: "",
     password: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Submitting:", { ...formData, role: selectedRole });
+    if (!selectedRole) {
+      setError("Please select a role before proceeding.");
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
 
     try {
       const res = await fetch("http://localhost:3000/api/auth/register", {
@@ -68,11 +56,25 @@ export default function Signup() {
       });
 
       const data = await res.json();
-      console.log("Signup response:", data);
+
+      if (res.ok) {
+        alert("Account successfully created! Please log in.");
+        // Redirect immediately to Login, letting the Login page handle the profile check.
+        navigate("/login", { replace: true });
+
+      } else {
+        // Handle backend errors (e.g., "User already exists")
+        setError(data.message || "Signup failed. Please check your details.");
+      }
     } catch (err) {
       console.error("Error signing up:", err);
+      setError("Network error. Could not connect to the server.");
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  const currentRole = roles.find(r => r.key === selectedRole);
 
   return (
     <div className="signup-container">
@@ -99,48 +101,32 @@ export default function Signup() {
                 </div>
               ))}
             </div>
+            {error && <p className="error-message">{error}</p>}
           </>
         ) : (
           <>
             <div className="signup-title">Create Account</div>
-            <div className="signup-subtitle">Role: {selectedRole}</div>
+            <div className="signup-subtitle">
+              Role: {currentRole?.label || selectedRole} <span className="back-link" onClick={() => setSelectedRole(null)}>(Change)</span>
+            </div>
 
             <form className="signup-form" onSubmit={handleSubmit}>
-              <input
-                type="text"
-                name="full_name"
-                placeholder="Full Name"
-                value={formData.full_name}
-                onChange={handleChange}
-              />
-              <input
-                type="email"
-                name="email"
-                placeholder="Email"
-                value={formData.email}
-                onChange={handleChange}
-              />
-              <input
-                type="text"
-                name="phone"
-                placeholder="Phone"
-                value={formData.phone}
-                onChange={handleChange}
-              />
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                value={formData.password}
-                onChange={handleChange}
-              />
-              <button type="submit">Sign Up</button>
+              <input type="text" name="full_name" placeholder="Full Name" value={formData.full_name} onChange={handleChange} required />
+              <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required />
+              <input type="tel" name="phone" placeholder="Phone (Optional)" value={formData.phone} onChange={handleChange} />
+              <input type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} required />
+
+              {error && <p className="error-message">{error}</p>}
+              <button type="submit" disabled={isLoading}>
+                {isLoading ? 'Registering...' : 'Sign Up'}
+              </button>
+              <p className="terms-note">By signing up, you agree to the HopeBridge <Link to="/terms">Terms of Service</Link>.</p>
             </form>
           </>
         )}
-     <div className="signup-subtitle">
-  Already have an account? <Link to="/login">Login</Link>
-</div>
+        <div className="signup-subtitle">
+          Already have an account? <Link to="/login">Login</Link>
+        </div>
         <div className="footer-icon">🤲</div>
       </div>
     </div>

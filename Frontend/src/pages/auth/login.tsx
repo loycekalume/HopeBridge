@@ -1,40 +1,83 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../../styles/signup.css";
+import { useAuth } from '../../context/authContext';
 
 export default function Login() {
     const [formData, setFormData] = useState({
         email: "",
         password: "",
     });
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const navigate = useNavigate();
+    const { login: authLogin } = useAuth();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+        setError(null);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log("Logging in:", formData);
+        setIsLoading(true);
+        setError(null);
 
         try {
+            // ... (API call logic remains the same) ...
+
             const res = await fetch("http://localhost:3000/api/auth/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
-                credentials: "include", // important for cookies
+                // ... API call details
             });
 
             const data = await res.json();
-            console.log("Login response:", data);
 
             if (res.ok) {
-                alert("Login successful 🎉");
-                // TODO: redirect to dashboard
+                authLogin(data.accessToken, data.user);
+
+                const user = data.user;
+                const userRole = user.role;
+                const profileComplete = user.is_profile_complete;
+
+                // 1. Define the base path based on the userRole
+                let basePath = '';
+
+                // Note: The backend role strings ('donor', 'organizer', etc.) 
+                // MUST exactly match the first part of the route path here.
+                switch (userRole) {
+                    case 'donor':
+                    case 'beneficiary':
+                    case 'admin':
+                    case 'organizer':
+                    case 'community':
+                        basePath = `/${userRole}`; // Matches /donor, /admin, /community, etc.
+                        break;
+                    case 'company':
+                        // Assuming 'company' also uses the donor dashboard for simplicity, 
+                        // or you need a specific '/company' route. Let's default to donor for now.
+                        basePath = '/donor';
+                        break;
+                    default:
+                        basePath = '/'; // Fallback to home or error page
+                }
+
+                // 2. Determine the final destination
+                const destination = profileComplete
+                    ? basePath // e.g., /donor
+                    : `/complete-profile/${userRole}`; // e.g., /complete-profile/donor
+
+                // 3. Navigate
+                navigate(destination, { replace: true });
+
             } else {
-                alert(data.message || "Login failed");
+                setError(data.message || "Invalid email or password.");
             }
         } catch (err) {
             console.error("Error logging in:", err);
+            setError("Network error. Could not connect to the server.");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -43,10 +86,7 @@ export default function Login() {
             <div className="signup-box">
                 {/* Logo */}
                 <div className="logo">
-                    <img
-                        src="https://img.icons8.com/ios-filled/50/2b6cb0/like--v1.png"
-                        alt="logo"
-                    />
+                    <img src="https://img.icons8.com/ios-filled/50/2b6cb0/like--v1.png" alt="logo" />
                     HopeBridge
                 </div>
 
@@ -60,6 +100,7 @@ export default function Login() {
                         placeholder="Email"
                         value={formData.email}
                         onChange={handleChange}
+                        required
                     />
                     <input
                         type="password"
@@ -67,8 +108,13 @@ export default function Login() {
                         placeholder="Password"
                         value={formData.password}
                         onChange={handleChange}
+                        required
                     />
-                    <button type="submit">Login</button>
+
+                    {error && <p className="error-message">{error}</p>}
+                    <button type="submit" disabled={isLoading}>
+                        {isLoading ? 'Logging In...' : 'Login'}
+                    </button>
                 </form>
                 <div className="signup-subtitle">
                     Don’t have an account? <Link to="/signup">Sign Up</Link>

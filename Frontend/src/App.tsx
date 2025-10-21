@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Signup from "./pages/auth/signup";
+import { AuthProvider } from './context/authContext';
 import Login from "./pages/auth/login";
 import Home from "./pages/home";
 import DonorDashboard from "./pages/dashboards/donorDashbord";
@@ -10,6 +11,7 @@ import CommunityDashboard from "./pages/dashboards/communityGroup";
 
 function App() {
   return (
+    <AuthProvider>
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
@@ -22,6 +24,7 @@ function App() {
         <Route path="/login" element={<Login />} />
       </Routes>
     </Router>
+    </AuthProvider>
   );
 }
 
