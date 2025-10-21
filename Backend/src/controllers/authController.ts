@@ -8,43 +8,61 @@ import { UserRequest } from "../utils/types/userTypes";
 // @desc    Register new user
 // @route   POST /api/auth/signup
 // @access  Public
+// authController.ts - REVISED signupUser
 export const signupUser = asyncHandler(async (req: Request, res: Response) => {
   const { full_name, email, phone, password_hash, role } = req.body;
 
+  // 1. Input Validation
   if (!full_name || !email || !password_hash || !role) {
     res.status(400).json({ message: "Please provide all required fields" });
     return;
   }
 
-  // Check if user exists
+  // 2. Role validation (Ensure frontend is sending correct role string)
+  const allowedRoles = ['donor', 'beneficiary', 'organizer', 'company', 'community', 'admin'];
+  if (!allowedRoles.includes(role)) {
+    res.status(400).json({ message: "Invalid user role provided" });
+    return;
+  }
+
+  // 3. Check if user exists
   const userExists = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
   if (userExists.rows.length > 0) {
     res.status(400).json({ message: "User already exists" });
     return;
   }
 
-  // Hash password correctly
+  // 4. Hash password
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password_hash, salt);
 
-  // Insert user with hashed password
+  // 5. Insert user with new field set to FALSE
   const newUser = await pool.query(
-    `INSERT INTO users (full_name, email, phone, password_hash, role)
-     VALUES ($1, $2, $3, $4, $5)
-     RETURNING user_id, full_name, email, phone, role`,
-    [full_name, email, phone, hashedPassword, role] // ✅ now storing hashedPassword
+    `INSERT INTO users (full_name, email, phone, password_hash, role, is_profile_complete)
+     VALUES ($1, $2, $3, $4, $5, FALSE)
+     RETURNING user_id, full_name, email, phone, role, is_profile_complete`,
+    [full_name, email, phone, hashedPassword, role]
   );
 
-  // Generate JWTs
+  const user = newUser.rows[0];
+
+  // 6. Generate JWTs
   const { accessToken, refreshToken } = generateToken(
     res,
-    newUser.rows[0].user_id,
-    role
+    user.user_id,
+    user.role
   );
 
   res.status(201).json({
     message: "User registered successfully",
-    user: newUser.rows[0],
+    user: {
+      user_id: user.user_id,
+      full_name: user.full_name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+      is_profile_complete: user.is_profile_complete, // <-- SENT TO FRONTEND
+    },
     accessToken,
     refreshToken,
   });
@@ -53,6 +71,7 @@ export const signupUser = asyncHandler(async (req: Request, res: Response) => {
 // @desc    Login user
 // @route   POST /api/auth/login
 // @access  Public
+// authController.ts - REVISED loginUser
 export const loginUser = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
@@ -61,8 +80,13 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
     return;
   }
 
-  // Check user
-  const userQuery = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+  // 1. Check user (Select ALL fields needed for login/redirection)
+  const userQuery = await pool.query(
+    `SELECT user_id, full_name, email, phone, role, password_hash, is_profile_complete 
+     FROM users 
+     WHERE email = $1`,
+    [email]
+  );
   const user = userQuery.rows[0];
 
   if (!user) {
@@ -70,16 +94,17 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
     return;
   }
 
-  // Compare with password_hash in DB
+  // 2. Compare password
   const isMatch = await bcrypt.compare(password, user.password_hash);
   if (!isMatch) {
     res.status(401).json({ message: "Invalid email or password" });
     return;
   }
 
-  // Generate JWTs
+  // 3. Generate JWTs
   const { accessToken, refreshToken } = generateToken(res, user.user_id, user.role);
 
+  // 4. Return user data including profile status
   res.json({
     message: "Login successful",
     user: {
@@ -88,6 +113,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
       email: user.email,
       phone: user.phone,
       role: user.role,
+      is_profile_complete: user.is_profile_complete, // <-- SENT TO FRONTEND
     },
     accessToken,
     refreshToken,
@@ -115,7 +141,7 @@ export const logout = async (req: Request, res: Response) => {
     // If using cookies:
     res.clearCookie("token");
 
- 
+
     res.status(200).json({ message: "Logged out successfully" });
   } catch (err) {
     res.status(500).json({ error: "Logout failed" });
