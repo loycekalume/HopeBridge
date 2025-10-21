@@ -4,6 +4,7 @@ import StatsCard from '../../components/beneficiary/statsCard';
 import MatchRequestCard from '../../components/beneficiary/matchRequestCard';
 import type { Stat, Match, Request } from '../../types/beneficiary';
 import '../../styles/beneficiacyDashboard.css'
+import Footer from "../../components/home/footer";
 
 const statsData: Stat[] = [
   { label: 'Active Requests', value: 3, iconClass: 'fas fa-clock', iconType: 'time' },
@@ -94,6 +95,7 @@ const Dashboard: React.FC = () => {
           <MatchRequestCard key={request.id} data={request} />
         ))}
       </section>
+           <Footer />
     </div>
   );
 };
