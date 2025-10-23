@@ -12,7 +12,8 @@ interface AuthUser {
   full_name: string;
   email: string;
   role: string;
-  is_profile_complete: boolean; // Crucial for redirection
+  is_profile_complete: boolean; 
+  company_name?: string;// Crucial for redirection
 }
 
 interface AuthContextType {

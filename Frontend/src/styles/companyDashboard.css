@@ -1,0 +1,159 @@
+:root {
+    /* Base Color Variables (Inherited from the platform) */
+    --primary-blue: #007bff;        /* CTA, Links */
+    --donation-icon: #2ecc71;       /* Success, Green accents */
+    --background-light: #f5f8fb;
+    --card-background: #ffffff;
+    --text-color: #2c3e50;
+    --light-text: #6c757d;
+    --border-color: #dee2e6;
+    
+    /* Company Specific Metric Colors (More muted/corporate) */
+    --metric-blue: #3498db;     /* Resources Donated */
+    --metric-green: #27ae60;    /* Employee Volunteers */
+    --metric-teal: #1abc9c;     /* Total Value Given */
+    --metric-purple: #9b59b6;   /* Open Sponsorships */
+}
+
+/* --- Base Container & Header --- */
+.company-dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.dashboard-header {
+    margin-bottom: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.dashboard-header h1 {
+    font-size: 2.2em;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-bottom: 5px;
+}
+
+.dashboard-header p {
+    color: var(--light-text);
+    font-size: 1em;
+}
+
+/* --- Call to Action Button --- */
+.cta-button {
+    background-color: var(--primary-blue);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2);
+    transition: background-color 0.2s;
+    margin-top: 10px; /* Space on smaller screens */
+}
+.cta-button:hover {
+    background-color: #0056b3;
+}
+
+/* --- Impact Metrics Section --- */
+.impact-metrics-section {
+    margin-bottom: 40px;
+}
+
+.impact-metrics-section h2 {
+    font-size: 1.5em;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: var(--text-color);
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.company-stat-card {
+    background-color: var(--card-background);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    transition: transform 0.2s;
+}
+
+.company-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.card-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 1.2em;
+    margin-right: 15px;
+}
+
+/* Icon Colors Mapping */
+.stat-blue .card-icon { background-color: var(--metric-blue); }
+.stat-green .card-icon { background-color: var(--metric-green); }
+.stat-teal .card-icon { background-color: var(--metric-teal); }
+.stat-purple .card-icon { background-color: var(--metric-purple); }
+
+.card-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.card-info .value {
+    font-size: 1.6em;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.card-info .label {
+    font-size: 0.9em;
+    color: var(--light-text);
+}
+
+/* --- Activity Section --- */
+.admin-tools-section h2 {
+    font-size: 1.5em;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.recent-activity-list {
+    background-color: var(--card-background);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    color: var(--light-text);
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 600px) {
+    .dashboard-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    .cta-button {
+        width: 100%;
+        justify-content: center;
+    }
+}

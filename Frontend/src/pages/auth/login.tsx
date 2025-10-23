@@ -58,7 +58,7 @@ export default function Login() {
                         basePath = `/${userRole}`;
                         break;
                     case 'company':
-                        basePath = '/donor'; // Assuming company redirects to donor dashboard
+                        basePath = '/company'; // Assuming company redirects to donor dashboard
                         break;
                     default:
                         basePath = '/';
