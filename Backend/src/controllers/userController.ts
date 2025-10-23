@@ -7,7 +7,7 @@ import asyncHandler from "../middlewares/asyncHandler";
 // @access  Private/Admin 
 export const getAllUsers = asyncHandler(async (req: Request, res: Response) => {
   const result = await pool.query(
-    "SELECT user_id, full_name, email, phone, role, created_at FROM users ORDER BY created_at DESC"
+    "SELECT user_id, full_name, email, phone, role created_at FROM users ORDER BY created_at DESC"
   );
 
   res.json({
