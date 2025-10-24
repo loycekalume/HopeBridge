@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import DonorProfileWizard from '../profileWizards/donorProfile'; // Assuming this is DonorProfile.tsx
 import BeneficiaryProfileWizard from '../profileWizards/beneficiary'; // Assuming this is beneficiary.tsx
 import OrganizerProfileWizard from '../profileWizards/organizer';
+import CommunityProfileWizard from '../profileWizards/community';
 
 export default function ProfileWizardRouter() {
     const { role } = useParams<{ role: string }>();
@@ -10,7 +11,7 @@ export default function ProfileWizardRouter() {
     switch (role) {
         case 'donor':
         case 'company':
-            // Renders the Donor form for both individual and corporate donors
+         
             return <DonorProfileWizard />;
             
         case 'beneficiary':
@@ -21,8 +22,8 @@ export default function ProfileWizardRouter() {
         case 'organizer':
              return <OrganizerProfileWizard />;
         case 'community':
-            // Placeholder for roles not yet built
-            return <div>Profile Wizard for {role} coming soon...</div>;
+             return <CommunityProfileWizard />;
+           
             
         default:
             // Handle invalid/unknown role in the URL
