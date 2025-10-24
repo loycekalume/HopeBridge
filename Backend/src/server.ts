@@ -6,6 +6,7 @@ import cors from "cors"
 import authRoutes from './routes/authRoutes'
 import userRoutes from './routes/userRoutes'
 import donorProfileRoutes from './routes/donorProfileRoutes'
+import beneficiaryRoutes from './routes/beneficiaryRoutes'
 
 
 
@@ -32,7 +33,8 @@ app.use(cors({
 //4. routes 
 app.use("/api/auth", authRoutes),
 app.use("/api/users", userRoutes),
-app.use("/api/donorprofile",donorProfileRoutes)
+app.use("/api/donorprofile",donorProfileRoutes),
+app.use("/api/beneficiaryprofile",beneficiaryRoutes)
 
 
 
