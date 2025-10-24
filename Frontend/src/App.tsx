@@ -8,8 +8,8 @@ import BeneficiaryDashboard from "./pages/dashboards/beneficiaryDashboard";
 import AdminDashboard from "./pages/dashboards/adminDashboard";
 import OrganizerDashboard from "./pages/dashboards/organizersDashboard";
 import CommunityDashboard from "./pages/dashboards/communityGroup";
-import DonorProfile from "./pages/profileWizards/donorProfile";
 import CompanyDashboard from "./pages/dashboards/companyDashboard";
+import ProfileWizard from "./pages/routes/profileRoutes";
 
 function App() {
   return (
@@ -23,7 +23,7 @@ function App() {
         <Route path="/organizer" element={<OrganizerDashboard />} />
         <Route path="/community" element={<CommunityDashboard />} />
         <Route path="/company" element={<CompanyDashboard />} />
-         <Route path="/completeProfile/:role" element={<DonorProfile />} />
+         <Route path="/completeProfile/:role" element={<ProfileWizard />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
       </Routes>

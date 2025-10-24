@@ -30,5 +30,20 @@ export interface Request {
   isMatch: false;
   donor?: never; // Requests don't have a donor property
 }
+// types/beneficiaryProfile.ts
 
+export interface BeneficiaryProfileData {
+  // --- Step 1: Needs and Location ---
+  street_address: string;
+  city: string;
+  state_region: string;
+  primary_need?: string; // Although not explicitly used in the form, good for data structure
+  about_you_needs: string; // The required text area detailing their situation
+
+  // --- Step 2: Verification Documents ---
+  gov_id_url: string; // Required
+  recommendation_letter_url?: string; // Optional field, hence the '?'
+  proof_of_need_url: string; // Required (e.g., medical statement, school enrollment)
+
+}
 export type CardData = Match | Request;
