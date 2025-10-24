@@ -2,7 +2,7 @@
 import { useParams } from 'react-router-dom';
 import DonorProfileWizard from '../profileWizards/donorProfile'; // Assuming this is DonorProfile.tsx
 import BeneficiaryProfileWizard from '../profileWizards/beneficiary'; // Assuming this is beneficiary.tsx
-// You'll eventually add OrganizerProfileWizard, etc., here
+import OrganizerProfileWizard from '../profileWizards/organizer';
 
 export default function ProfileWizardRouter() {
     const { role } = useParams<{ role: string }>();
@@ -19,6 +19,7 @@ export default function ProfileWizardRouter() {
             
         // Add other roles here as you build them
         case 'organizer':
+             return <OrganizerProfileWizard />;
         case 'community':
             // Placeholder for roles not yet built
             return <div>Profile Wizard for {role} coming soon...</div>;

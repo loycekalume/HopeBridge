@@ -19,3 +19,17 @@ export interface VerificationTask {
   donorName?: string;
   beneficiaryName?: string;
 }
+export interface OrganizerProfileData {
+  // --- Step 1: Basic Info & Type ---
+  organizer_type: 'NGO Rep' | 'Social Worker' | 'Community Leader' | 'Other'; // New required field
+  street_address: string;
+  city: string;
+  state_region: string;
+  about_me: string; // Bio on experience/motivation
+
+  // --- Step 2: Verification Documents ---
+  gov_id_url: string; // Required (Personal Identity)
+  professional_cert_url: string; // Required (Proof of Eligibility: NGO ID, License, etc.)
+  
+  
+}
