@@ -7,7 +7,7 @@ import authRoutes from './routes/authRoutes'
 import userRoutes from './routes/userRoutes'
 import donorProfileRoutes from './routes/donorProfileRoutes'
 import beneficiaryRoutes from './routes/beneficiaryRoutes'
-
+import organizerRoutes from './routes/organizerRoutes'
 
 
 
@@ -35,6 +35,7 @@ app.use("/api/auth", authRoutes),
 app.use("/api/users", userRoutes),
 app.use("/api/donorprofile",donorProfileRoutes),
 app.use("/api/beneficiaryprofile",beneficiaryRoutes)
+app.use("/api/organizerprofile",organizerRoutes)
 
 
 
