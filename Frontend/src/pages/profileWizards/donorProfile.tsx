@@ -224,7 +224,7 @@ export default function DonorProfileWizard() {
         setError(null);
         
         try {
-            const res = await fetch(`http://localhost:3000/api/users/${user?.user_id}/profile/donor`, {
+            const res = await fetch(`http://localhost:3000/api/donorprofile/${user?.user_id}/profile/donor`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(profileData), 
