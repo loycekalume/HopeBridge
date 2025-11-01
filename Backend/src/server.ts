@@ -9,6 +9,7 @@ import donorProfileRoutes from './routes/donorProfileRoutes'
 import beneficiaryRoutes from './routes/beneficiaryRoutes'
 import organizerRoutes from './routes/organizerRoutes'
 import communityRoutes from './routes/communityRoutes'
+import companyRoutes from './routes/companyRoutes'
 
 
 
@@ -38,6 +39,7 @@ app.use("/api/donorprofile",donorProfileRoutes),
 app.use("/api/beneficiaryprofile",beneficiaryRoutes)
 app.use("/api/organizerprofile",organizerRoutes)
 app.use("/api/communityprofile",communityRoutes)
+app.use("/api/companyprofile",companyRoutes)
 
 
 
