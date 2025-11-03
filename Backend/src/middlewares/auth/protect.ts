@@ -12,16 +12,18 @@ interface JwtPayload {
   role: string;
 }
 
-
 export const protect = asyncHandler(async (req: UserRequest, res: Response, next: NextFunction) => {
- 
-  let token = req.cookies.access_token;
   
- 
-  if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    token = req.headers.authorization.split(' ')[1];
-  }
-  console.log("Incoming token:", token);
+  let token =
+    req.cookies.access_token ||
+    (req.headers.authorization && req.headers.authorization.startsWith("Bearer")
+      ? req.headers.authorization.split(" ")[1]
+      : null);
+
+  // console.log("Incoming token:", token);
+  // console.log("Cookies:", req.cookies);
+  // console.log("Auth Header:", req.headers.authorization);
+
   if (!token) {
     console.log("No token found in request");
     res.status(401).json({ message: "Not authorized, no token" });
@@ -29,11 +31,12 @@ export const protect = asyncHandler(async (req: UserRequest, res: Response, next
   }
 
   try {
+    // ✅ Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
-    
-  
+
+    // ✅ Query user from DB
     const userQuery = await pool.query(
-      "SELECT user_id, email, first_name, last_name,phone_number, role FROM users WHERE user_id = $1",
+      "SELECT user_id, email, full_name, phone, role FROM users WHERE user_id = $1",
       [decoded.userId]
     );
 
@@ -42,15 +45,16 @@ export const protect = asyncHandler(async (req: UserRequest, res: Response, next
       return;
     }
 
-    req.user = userQuery.rows[0]; // Attach user to req
+    // ✅ Attach user info to the request
+    req.user = userQuery.rows[0];
     next();
   } catch (error) {
     console.log("Token verification failed:", error);
-    res.status(401).json({ message: "Token failed" });
+    res.status(401).json({ message: "Token failed or expired" });
   }
 });
 
-// Middleware to allow only specific roles
+// ✅ Middleware to allow only specific roles
 export const requireRole = (allowedRoles: string | string[]) => {
   return (req: UserRequest, res: Response, next: NextFunction) => {
     if (!req.user) {

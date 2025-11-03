@@ -23,7 +23,7 @@ export const generateToken = (res:Response, userId: string, role: string) => {
         res.cookie("access_token", accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV !== "development", 
-            sameSite: "none",
+            sameSite: "lax",
             maxAge: 15 * 60 * 1000, // 15 minutes
         });
 
@@ -32,8 +32,8 @@ export const generateToken = (res:Response, userId: string, role: string) => {
          res.cookie("refresh_token", refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV !== "development",
-            sameSite: "strict",
-            maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+            sameSite: "lax",
+            maxAge: 30 * 24 * 60 * 60 * 1000, 
         });
 
 

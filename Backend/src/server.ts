@@ -3,6 +3,7 @@ import express from 'express'
 import dotenv from 'dotenv'
 import cookieParser from "cookie-parser"
 import cors from "cors"
+import path from "path";
 import authRoutes from './routes/authRoutes'
 import userRoutes from './routes/userRoutes'
 import donorProfileRoutes from './routes/donorProfileRoutes'
@@ -10,6 +11,7 @@ import beneficiaryRoutes from './routes/beneficiaryRoutes'
 import organizerRoutes from './routes/organizerRoutes'
 import communityRoutes from './routes/communityRoutes'
 import companyRoutes from './routes/companyRoutes'
+import donationRoutes from './routes/donationRoutes'
 
 
 
@@ -34,12 +36,14 @@ app.use(cors({
 
 //4. routes 
 app.use("/api/auth", authRoutes),
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use("/api/users", userRoutes),
 app.use("/api/donorprofile",donorProfileRoutes),
 app.use("/api/beneficiaryprofile",beneficiaryRoutes)
 app.use("/api/organizerprofile",organizerRoutes)
 app.use("/api/communityprofile",communityRoutes)
 app.use("/api/companyprofile",companyRoutes)
+ app.use('/api/donations', donationRoutes)
 
 
 
