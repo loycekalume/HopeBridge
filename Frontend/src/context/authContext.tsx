@@ -1,61 +1,85 @@
-
-import React, { createContext, useContext, useState} from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 
-
-interface AuthProviderProps {
-  children: ReactNode; }
-
-// Define the shape of the user data returned by the backend
+// --- Types ---
 interface AuthUser {
   user_id: number;
   full_name: string;
   email: string;
   role: string;
-  is_profile_complete: boolean; 
-  company_name?: string;// Crucial for redirection
+  is_profile_complete: boolean;
+  company_name?: string;
 }
 
 interface AuthContextType {
   user: AuthUser | null;
   token: string | null;
+  loading: boolean; // <-- Add this
   login: (accessToken: string, userData: AuthUser) => void;
   logout: () => void;
 }
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
   children: ReactNode;
 }
 
+// --- Context Creation ---
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// --- Provider ---
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true); // <-- Tracks restore state
 
+  // --- Restore session from localStorage on mount ---
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    const storedToken = localStorage.getItem('token');
+
+    if (storedUser && storedToken) {
+      try {
+        setUser(JSON.parse(storedUser));
+        setToken(storedToken);
+      } catch (err) {
+        console.error('Failed to parse stored auth data', err);
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+      }
+    }
+    setLoading(false); // Mark initialization complete
+  }, []);
+
+  // --- Login ---
   const login = (accessToken: string, userData: AuthUser) => {
     setToken(accessToken);
     setUser(userData);
-    // In a production app, you'd also save the token/user to localStorage/sessionStorage here
+
+    // Persist to localStorage
+    localStorage.setItem('token', accessToken);
+    localStorage.setItem('user', JSON.stringify(userData));
   };
 
+  // --- Logout ---
   const logout = () => {
     setToken(null);
     setUser(null);
-    // Clear storage here
+
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Custom hook to use the Auth context
+// --- Hook ---
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;

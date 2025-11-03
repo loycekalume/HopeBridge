@@ -1,0 +1,276 @@
+/* --- Donation Form Modal Styles --- */
+:root {
+    --primary-blue: #007bff;
+    --success-green: #2ecc71;
+    --text-color: #2c3e50;
+    --light-text: #6c757d;
+    --card-background: #ffffff;
+    --border-color: #dee2e6;
+    --error-red: #dc3545;
+}
+
+/* Modal Backdrop */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    overflow-y: auto; /* Allow scrolling if content is too tall */
+}
+
+/* Modal Content Box */
+.modal-content {
+    background-color: var(--card-background);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 650px; /* Set a fixed max-width for forms */
+    max-height: 90vh;
+    overflow-y: auto;
+    margin: 40px 0; /* Ensures space above and below on scroll */
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+}
+
+.modal-header h2 {
+    font-size: 1.5em;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: var(--light-text);
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.close-btn:hover { color: var(--error-red); }
+
+.subtitle {
+    color: var(--light-text);
+    margin-bottom: 25px;
+    font-size: 0.95em;
+}
+
+/* --- Form Layout and Inputs --- */
+.donation-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.form-row {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+.form-row.full-width {
+    flex: 1 1 100%;
+}
+.form-row.half-width {
+    flex: 1 1 calc(50% - 10px); /* Two columns */
+}
+
+.donation-form label {
+    font-size: 0.9em;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 5px;
+}
+
+.donation-form input[type="text"],
+.donation-form input[type="number"],
+.donation-form textarea,
+.donation-form select {
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 1em;
+    width: 100%;
+}
+
+.donation-form textarea {
+    resize: vertical;
+}
+
+/* --- Photo Upload Area --- */
+.photo-upload-area {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    border-top: 1px solid var(--border-color);
+    padding-top: 15px;
+}
+
+.upload-box {
+    border: 2px dashed var(--primary-blue);
+    padding: 30px 20px;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    color: var(--primary-blue);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.upload-box:hover { background-color: #f0f8ff; }
+.upload-box p { margin: 5px 0 3px 0; font-weight: 600; }
+.upload-box small { color: var(--light-text); font-size: 0.75em; }
+
+.photo-preview-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    min-height: 30px;
+}
+.photo-preview-tag {
+    display: flex;
+    align-items: center;
+    background-color: #e6e6e6;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    color: var(--text-color);
+}
+.photo-preview-tag button {
+    background: none;
+    border: none;
+    color: var(--light-text);
+    margin-left: 5px;
+    cursor: pointer;
+    padding: 0;
+}
+.photo-preview-tag button:hover { color: var(--error-red); }
+.no-photos { font-size: 0.85em; color: var(--light-text); }
+
+
+/* --- Submit Button & Error --- */
+.submit-btn {
+    background-color: var(--success-green);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: 600;
+    margin-top: 20px;
+    transition: background-color 0.2s;
+    width: 100%;
+}
+.submit-btn:hover:not(:disabled) { background-color: #27ae60; }
+.submit-btn:disabled { background-color: #a0a0a0; cursor: not-allowed; }
+
+.error-message {
+    color: var(--error-red);
+    margin-top: 10px;
+    width: 100%;
+    text-align: center;
+}
+
+/* --- Additions to donorDashboard.css --- */
+
+.donation-card {
+    /* Modify layout to accommodate image next to text */
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    border: 1px solid var(--border-color, #e3e8ee);
+    border-radius: 8px;
+    margin-bottom: 15px;
+    /* background-color: var(--card-background, #fff); */
+}
+
+.donation-image {
+    /* Fixed container size for the image */
+    flex-shrink: 0; 
+    width: 100px;
+    height: 100px;
+    overflow: hidden;
+    border-radius: 6px;
+     filter: none;        
+    opacity: 1;
+}
+
+.donation-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;  /* fills the box perfectly */
+  border-radius: 6px; /* matches parent’s rounding */
+  filter: brightness(1); /* ensures image isn’t dark */
+  opacity: 1; /* full visibility */
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.donation-image:hover img {
+  transform: scale(1.05); /* nice zoom effect on hover */
+  filter: brightness(1.05);
+}
+
+.donation-thumbnail {
+    /* Ensure image fills the container without distortion */
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.donation-info {
+    /* Allow info to take up most of the space */
+    flex-grow: 1;
+}
+
+.donation-card h4 {
+    font-weight: 600;
+    font-size: 1.1em;
+    margin-bottom: 5px;
+}
+
+/* Ensure actions align to the right */
+.donation-actions {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+}
+
+/* Responsive adjustment */
+@media (max-width: 600px) {
+    .donation-card {
+        /* Allow content to stack vertically if space is tight */
+        flex-wrap: wrap; 
+    }
+    .donation-image {
+        /* Place image on its own line if needed, or keep it floating */
+        margin-right: 10px;
+    }
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 550px) {
+    .modal-content {
+        padding: 20px;
+    }
+    .form-row.half-width {
+        flex: 1 1 100%; /* Stack half-width fields vertically on small screens */
+    }
+}
