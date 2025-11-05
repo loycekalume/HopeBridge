@@ -6,6 +6,108 @@ import asyncHandler from "../middlewares/asyncHandler";
 // @desc    Update Beneficiary Profile (Completes Registration)
 // @route   PUT /api/users/:userId/profile/beneficiary
 // @access  Private 
+export const createBeneficiaryRequest = asyncHandler(async (req: Request, res: Response) => {
+  const beneficiaryId = (req as any).user?.user_id; // assuming auth middleware sets req.user
+  const {
+    category,
+    title,
+    description,
+    urgency_level,
+    quantity,
+    location,
+    household_size,
+    can_pickup,
+    needs_delivery,
+    flexible_condition,
+  } = req.body;
+
+  if (!beneficiaryId || !category || !title || !description || !location) {
+    res.status(400).json({
+      message: "Missing required fields: category, title, description, or location.",
+    });
+    return;
+  }
+
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const insertQuery = `
+      INSERT INTO beneficiary_requests 
+        (beneficiary_id, category, title, description, urgency_level, quantity, location, household_size, can_pickup, needs_delivery, flexible_condition)
+      VALUES 
+        ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      RETURNING request_id, beneficiary_id, title, category, status, created_at;
+    `;
+
+    const result = await client.query(insertQuery, [
+      beneficiaryId,
+      category,
+      title,
+      description,
+      urgency_level || null,
+      quantity || 1,
+      location,
+      household_size || null,
+      can_pickup || false,
+      needs_delivery || false,
+      flexible_condition || false,
+    ]);
+
+    await client.query("COMMIT");
+
+    res.status(201).json({
+      message: "Help request submitted successfully.",
+      request: result.rows[0],
+    });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Transaction Error submitting beneficiary request:", error);
+    res.status(500).json({
+      message: "Failed to submit request due to a server error.",
+    });
+  } finally {
+    client.release();
+  }
+});
+
+// @desc    Get all requests by the logged-in beneficiary
+// @route   GET /api/beneficiary/requests
+// @access  Private
+export const getMyBeneficiaryRequests = asyncHandler(async (req: Request, res: Response) => {
+  const beneficiaryId = (req as any).user?.user_id;
+
+  if (!beneficiaryId) {
+    res.status(401).json({ message: "User not authenticated." });
+    return;
+  }
+
+  try {
+    const result = await pool.query(
+      `
+      SELECT request_id, category, title, description, urgency_level, quantity,
+             location, household_size, status, created_at
+      FROM beneficiary_requests
+      WHERE beneficiary_id = $1
+      ORDER BY created_at DESC;
+      `,
+      [beneficiaryId]
+    );
+
+    res.status(200).json({
+      count: result.rowCount,
+      requests: result.rows,
+    });
+  } catch (error) {
+    console.error("Error fetching beneficiary requests:", error);
+    res.status(500).json({
+      message: "Failed to retrieve beneficiary requests.",
+    });
+  }
+});
+
+
 export const updateBeneficiaryProfile = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.params.userId; 
     const { street_address, city, state_region, about_you_needs, gov_id_url, recommendation_letter_url, proof_of_need_url } = req.body;
