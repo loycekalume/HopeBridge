@@ -154,3 +154,32 @@ export const updateBeneficiaryProfile = asyncHandler(async (req: Request, res: R
         client.release();
     }
 });
+
+
+
+// @desc    Get Beneficiary Stats
+// @route   GET /api/beneficiary/stats/:userId
+// @access  Private
+export const getBeneficiaryStats = asyncHandler(async (req: Request, res: Response) => {
+  const { userId } = req.params;
+
+  const client = await pool.connect();
+  try {
+    const [activeRes, matchedRes, completedRes] = await Promise.all([
+      client.query(`SELECT COUNT(*) FROM beneficiary_requests WHERE beneficiary_id = $1 AND status = 'Pending'`, [userId]),
+      client.query(`SELECT COUNT(*) FROM beneficiary_requests WHERE beneficiary_id = $1 AND status = 'Matched'`, [userId]),
+      client.query(`SELECT COUNT(*) FROM beneficiary_requests WHERE beneficiary_id = $1 AND status = 'Completed'`, [userId]),
+    ]);
+
+    res.status(200).json({
+      active_requests: parseInt(activeRes.rows[0].count),
+      matched_donations: parseInt(matchedRes.rows[0].count),
+      items_received: parseInt(completedRes.rows[0].count),
+    });
+  } catch (err) {
+    console.error("Error fetching beneficiary stats:", err);
+    res.status(500).json({ message: "Failed to fetch stats" });
+  } finally {
+    client.release();
+  }
+});
