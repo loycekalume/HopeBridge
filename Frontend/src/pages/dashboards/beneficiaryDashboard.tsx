@@ -1,25 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import StatsCard from "../../components/beneficiary/statsCard";
 import MatchRequestCard from "../../components/beneficiary/matchRequestCard";
-import type { Stat,  Request } from "../../types/beneficiary";
+import type { Stat, Request } from "../../types/beneficiary";
 import "../../styles/beneficiacyDashboard.css";
 import Footer from "../../components/home/footer";
 import RequestHelpModal from "../../components/beneficiary/requestModal";
 import { apiCall } from "../../utils/api";
 
-const statsData: Stat[] = [
-  { label: "Active Requests", value: 0, iconClass: "fas fa-clock", iconType: "time" },
-  { label: "Items Received", value: 8, iconClass: "fas fa-box", iconType: "box" },
-  { label: "Matched Donations", value: 5, iconClass: "fas fa-check", iconType: "check" },
-];
-
 const Dashboard: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [activeRequests, setActiveRequests] = useState<Request[]>([]);
+  const [stats, setStats] = useState<Stat[]>([]);
   const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem("token");
 
-  const fetchRequests = async () => {
+  const token = localStorage.getItem("token");
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+  // 🟢 Fetch active requests
+  const fetchRequests = useCallback(async () => {
     try {
       setLoading(true);
       const data = await apiCall("/api/beneficiaryProfile/requests", "GET", undefined, token || "");
@@ -37,11 +35,36 @@ const Dashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
+  //  Fetch live stats
+  const fetchStats = useCallback(async () => {
+    try {
+      const data = await apiCall(`/api/beneficiaryProfile/stats/${user.user_id}`, "GET", undefined, token || "");
+      setStats([
+        { label: "Active Requests", value: data.active_requests, iconClass: "fas fa-clock", iconType: "time" },
+        { label: "Items Received", value: data.items_received, iconClass: "fas fa-box", iconType: "box" },
+        { label: "Matched Donations", value: data.matched_donations, iconClass: "fas fa-check", iconType: "check" },
+      ]);
+    } catch (error: any) {
+      console.error("Failed to fetch stats:", error.message);
+    }
+  }, [token, user.user_id]);
+
+  // 🟡 Auto-refresh both on mount
   useEffect(() => {
     fetchRequests();
-  }, []);
+    fetchStats();
+  }, [fetchRequests, fetchStats]);
+
+  // 🟣 Optional: Auto-refresh stats every 60 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchStats();
+      fetchRequests();
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [fetchStats, fetchRequests]);
 
   return (
     <div className="dashboard-container">
@@ -54,11 +77,13 @@ const Dashboard: React.FC = () => {
         </button>
       </header>
 
-      {/* Stats Cards Section */}
+      {/* Stats Section */}
       <section className="stats-cards">
-        {statsData.map((stat) => (
-          <StatsCard key={stat.label} stat={stat} />
-        ))}
+        {stats.length === 0 ? (
+          <p>Loading stats...</p>
+        ) : (
+          stats.map((stat) => <StatsCard key={stat.label} stat={stat} />)
+        )}
       </section>
 
       {/* Active Requests */}
@@ -77,9 +102,13 @@ const Dashboard: React.FC = () => {
       {showModal && (
         <RequestHelpModal
           onClose={() => setShowModal(false)}
-          onRequestSubmitted={fetchRequests}
+          onRequestSubmitted={() => {
+            fetchRequests();
+            fetchStats();
+          }}
         />
       )}
+
       <Footer />
     </div>
   );
