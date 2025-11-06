@@ -10,6 +10,7 @@ import OrganizerDashboard from "./pages/dashboards/organizersDashboard";
 import CommunityDashboard from "./pages/dashboards/communityGroup";
 import CompanyDashboard from "./pages/dashboards/companyDashboard";
 import ProfileWizard from "./pages/routes/profileRoutes";
+import DonationsPage from "./pages/dashboards/donations"
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/organizer" element={<OrganizerDashboard />} />
         <Route path="/community" element={<CommunityDashboard />} />
         <Route path="/company" element={<CompanyDashboard />} />
+        <Route path="/beneficiary/donations" element={<DonationsPage />} />
          <Route path="/completeProfile/:role" element={<ProfileWizard />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />

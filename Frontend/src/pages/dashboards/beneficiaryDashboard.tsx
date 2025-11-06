@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import StatsCard from "../../components/beneficiary/statsCard";
 import MatchRequestCard from "../../components/beneficiary/matchRequestCard";
 import type { Stat, Request } from "../../types/beneficiary";
@@ -7,7 +8,9 @@ import Footer from "../../components/home/footer";
 import RequestHelpModal from "../../components/beneficiary/requestModal";
 import { apiCall } from "../../utils/api";
 
+
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [activeRequests, setActiveRequests] = useState<Request[]>([]);
   const [stats, setStats] = useState<Stat[]>([]);
@@ -74,6 +77,10 @@ const Dashboard: React.FC = () => {
         <p>Find resources and track your requests</p>
         <button className="request-help-btn" onClick={() => setShowModal(true)}>
           <i className="fas fa-plus"></i> Request Help
+        </button>
+
+        <button className="view-donations-btn" onClick={() => navigate("/beneficiary/donations")}>
+          <i className="fas fa-gift"></i> View Donations
         </button>
       </header>
 
