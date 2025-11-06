@@ -2,6 +2,7 @@
 import { Request, Response } from "express";
 import pool from "../db/db.config"; 
 import asyncHandler from "../middlewares/asyncHandler"; 
+import { UserRequest } from "../utils/types/userTypes";
 
 // @desc    Update Beneficiary Profile (Completes Registration)
 // @route   PUT /api/users/:userId/profile/beneficiary
@@ -182,4 +183,62 @@ export const getBeneficiaryStats = asyncHandler(async (req: Request, res: Respon
   } finally {
     client.release();
   }
+});
+
+
+
+// @desc    Get All Available Donations for Beneficiaries
+// @route   GET /api/beneficiary/donations
+// @access  Private
+export const getAvailableDonations = asyncHandler(async (req: UserRequest, res: Response) => {
+  // Ensure user is authenticated
+  if (!req.user || !req.user.user_id) {
+    res.status(401).json({ message: "Not authorized or user ID missing." });
+    return;
+  }
+
+  const beneficiaryId = req.user.user_id;
+
+  // 1️⃣ Fetch all donations that are still available (Pending or Matched to this beneficiary)
+  const donationsQuery = `
+    SELECT 
+      d.donation_id,
+      d.item_name,
+      d.category,
+      d.description,
+      d.item_condition,
+      d.quantity,
+      d.location,
+      d.availability,
+      d.status,
+      d.photo_urls,
+      d.created_at,
+      u.full_name AS donor_name
+    FROM donations d
+    JOIN users u ON d.donor_user_id = u.user_id
+    WHERE 
+      (d.status = 'Pending' OR d.matched_beneficiary_id = $1)
+    ORDER BY d.created_at DESC;
+  `;
+
+  const result = await pool.query(donationsQuery, [beneficiaryId]);
+
+  // 2️⃣ (Optional) Add a simple “match percentage” if you want a placeholder for now
+  const donations = result.rows.map((d) => ({
+    donation_id: d.donation_id,
+    item_name: d.item_name,
+    category: d.category,
+    description: d.description,
+    condition: d.item_condition,
+    quantity: d.quantity,
+    location: d.location,
+    availability: d.availability,
+    status: d.status,
+    photo_urls: d.photo_urls || [],
+    created_at: d.created_at,
+    donor_name: d.donor_name,
+    match_percent: d.matched_beneficiary_id === beneficiaryId ? 95 : Math.floor(Math.random() * 40) + 60, // just mock data
+  }));
+
+  res.status(200).json({ donations });
 });

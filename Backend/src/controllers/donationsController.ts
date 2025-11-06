@@ -10,7 +10,7 @@ interface UserRequest extends Request {
   files?: Express.Multer.File[];
 }
 
-// ✅ POST a new donation with image upload
+//  POST a new donation with image upload
 export const postNewDonation = asyncHandler(async (req: UserRequest, res: Response) => {
   if (!req.user || !req.user.user_id) {
     res.status(401).json({ message: "Not authorized or user ID missing." });
@@ -127,4 +127,99 @@ const donationsQuery = `
             matched_to: d.matched_to || 'Awaiting match'
         })),
     });
+});
+
+
+export const updateDonation = asyncHandler(async (req: UserRequest, res: Response) => {
+  if (!req.user || !req.user.user_id) {
+    return res.status(401).json({ message: "Not authorized." });
+  }
+
+  const donorUserId = req.user.user_id;
+  const { donationId } = req.params;
+  const { title, category, description, condition, quantity, location, availability } = req.body;
+
+  // Validate required fields
+  if (!title && !category && !description && !condition && !quantity && !location && !availability && !req.files) {
+    return res.status(400).json({ message: "No update data provided." });
+  }
+
+  // Check donation ownership
+  const donationCheck = await pool.query(
+    "SELECT * FROM donations WHERE donation_id = $1 AND donor_user_id = $2",
+    [donationId, donorUserId]
+  );
+
+  if (donationCheck.rows.length === 0) {
+    return res.status(404).json({ message: "Donation not found or not authorized to update." });
+  }
+
+  // Handle image updates
+  let photoUrls: string[] = donationCheck.rows[0].photo_urls || [];
+
+  if (req.files && (req.files as Express.Multer.File[]).length > 0) {
+    const uploadedPhotos = (req.files as Express.Multer.File[]).map(
+      (file) => `/uploads/${file.filename}`
+    );
+    // Append new images to existing ones (you can replace instead if you prefer)
+    photoUrls = [...photoUrls, ...uploadedPhotos];
+  }
+
+  // Build dynamic update query
+  const fields: string[] = [];
+  const values: any[] = [];
+  let index = 1;
+
+  if (title) {
+    fields.push(`item_name = $${index++}`);
+    values.push(title);
+  }
+  if (category) {
+    fields.push(`category = $${index++}`);
+    values.push(category);
+  }
+  if (description) {
+    fields.push(`description = $${index++}`);
+    values.push(description);
+  }
+  if (condition) {
+    fields.push(`item_condition = $${index++}`);
+    values.push(condition);
+  }
+  if (quantity) {
+    const qty = parseInt(quantity);
+    if (isNaN(qty) || qty <= 0) {
+      return res.status(400).json({ message: "Quantity must be a positive number." });
+    }
+    fields.push(`quantity = $${index++}`);
+    values.push(qty);
+  }
+  if (location) {
+    fields.push(`location = $${index++}`);
+    values.push(location);
+  }
+  if (availability) {
+    fields.push(`availability = $${index++}`);
+    values.push(availability);
+  }
+  if (photoUrls.length > 0) {
+    fields.push(`photo_urls = $${index++}`);
+    values.push(photoUrls);
+  }
+
+  values.push(donationId, donorUserId);
+
+  const updateQuery = `
+    UPDATE donations
+    SET ${fields.join(", ")}
+    WHERE donation_id = $${index++} AND donor_user_id = $${index}
+    RETURNING *;
+  `;
+
+  const result = await pool.query(updateQuery, values);
+
+  res.status(200).json({
+    message: "Donation updated successfully.",
+    donation: result.rows[0],
+  });
 });
