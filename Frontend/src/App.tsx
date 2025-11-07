@@ -12,6 +12,7 @@ import CompanyDashboard from "./pages/dashboards/companyDashboard";
 import ProfileWizard from "./pages/routes/profileRoutes";
 import DonationsPage from "./pages/dashboards/donations"
 import PendingVerificationsPage from "./components/organizers/pendingVerifications";
+import ApprovedRequests from "./components/organizers/approvedRequests";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
           <Route path="/pending-verifications" element={<PendingVerificationsPage />} />
+          <Route path="/approvedRequests" element={<ApprovedRequests/>} />
       </Routes>
     </Router>
     </AuthProvider>

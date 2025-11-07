@@ -51,7 +51,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, profile }) 
           <Link to="/pending-verifications" className={isActive("/pending-verifications") ? "active" : ""}>
             Pending Verifications
           </Link>
-          <Link to="/approved-requests" className={isActive("/approved-requests") ? "active" : ""}>
+          <Link to="/approvedRequests" className={isActive("/approvedRequests") ? "active" : ""}>
             Approved Requests
           </Link>
           <Link to="/matched-donations" className={isActive("/matched-donations") ? "active" : ""}>
