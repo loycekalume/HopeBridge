@@ -298,3 +298,114 @@ export const getVolunteerProfile = asyncHandler(async (req: Request, res: Respon
     client.release();
   }
 });
+
+
+export const getApprovedProfiles = asyncHandler(async (req: Request, res: Response) => {
+  const client = await pool.connect();
+
+  try {
+    const query = `
+      SELECT 
+        u.user_id,
+        u.full_name,
+        u.email,
+        u.role,
+        COALESCE(dp.city, bp.city, op.city, cp.city, 'N/A') AS city,
+        CASE 
+          WHEN dp.verification_status = 'Verified' THEN 'Donor'
+          WHEN bp.verification_status = 'Verified' THEN 'Beneficiary'
+          WHEN op.verification_status = 'Verified' THEN 'Organizer'
+          WHEN cp.verification_status = 'Verified' THEN 'Community'
+        END AS verified_role
+      FROM users u
+      LEFT JOIN donor_profiles dp ON u.user_id = dp.user_id
+      LEFT JOIN beneficiary_profiles bp ON u.user_id = bp.user_id
+      LEFT JOIN organizer_profiles op ON u.user_id = op.user_id
+      LEFT JOIN community_profiles cp ON u.user_id = cp.user_id
+      WHERE 
+        dp.verification_status = 'Verified'
+        OR bp.verification_status = 'Verified'
+        OR op.verification_status = 'Verified'
+        OR cp.verification_status = 'Verified'
+      ORDER BY u.full_name ASC;
+    `;
+
+    const result = await client.query(query);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "No approved profiles found" });
+    }
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching approved profiles:", error);
+    res.status(500).json({ message: "Failed to fetch approved profiles" });
+  } finally {
+    client.release();
+  }
+});
+
+
+export const revokeVerifiedProfile = asyncHandler(async (req: Request, res: Response) => {
+  const { userId } = req.params;
+  const client = await pool.connect();
+
+  try {
+    // 1️⃣ Determine user role
+    const roleResult = await client.query(
+      `SELECT role FROM users WHERE user_id = $1`,
+      [userId]
+    );
+
+    if (roleResult.rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const role = roleResult.rows[0].role;
+    let tableName;
+
+    switch (role) {
+      case "donor":
+        tableName = "donor_profiles";
+        break;
+      case "beneficiary":
+        tableName = "beneficiary_profiles";
+        break;
+      case "organizer":
+        tableName = "organizer_profiles";
+        break;
+      case "community":
+        tableName = "community_profiles";
+        break;
+      default:
+        return res.status(400).json({ message: "This role cannot be revoked" });
+    }
+
+    // 2️⃣ Update verification status to "Pending Review"
+    const updateQuery = `
+      UPDATE ${tableName}
+      SET verification_status = 'Pending Review', updated_at = NOW()
+      WHERE user_id = $1
+      RETURNING user_id, verification_status;
+    `;
+
+    const updateResult = await client.query(updateQuery, [userId]);
+
+    if (updateResult.rows.length === 0) {
+      return res.status(404).json({ message: "Profile not found" });
+    }
+
+    res.json({
+      message: "Verification revoked successfully",
+      user: updateResult.rows[0],
+    });
+  } catch (error) {
+    console.error("Error revoking verification:", error);
+    res.status(500).json({ message: "Failed to revoke verification" });
+  } finally {
+    client.release();
+  }
+});
+
+
+
