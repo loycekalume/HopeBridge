@@ -14,6 +14,7 @@ import DonationsPage from "./pages/dashboards/donations";
 import PendingVerificationsPage from "./components/organizers/pendingVerifications";
 import ApprovedRequests from "./components/organizers/approvedRequests";
 import MatchedDonations from "./components/organizers/matchedDonations"; // ✅ import this page
+import CommunityEvents from "./components/organizers/communityEvents";
  // optional if you have this
 
 function App() {
@@ -42,6 +43,8 @@ function App() {
           <Route path="/pending-verifications" element={<PendingVerificationsPage />} />
           <Route path="/approvedRequests" element={<ApprovedRequests />} />
           <Route path="/matched-donations" element={<MatchedDonations />} /> 
+          <Route path="/community-events" element={<CommunityEvents />} />
+
         
 
         </Routes>
