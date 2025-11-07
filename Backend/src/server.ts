@@ -12,6 +12,7 @@ import organizerRoutes from './routes/organizerRoutes'
 import communityRoutes from './routes/communityRoutes'
 import companyRoutes from './routes/companyRoutes'
 import donationRoutes from './routes/donationRoutes'
+import matchedDonationRoutes from './routes/matchedDonationRoutes';
 
 
 
@@ -22,28 +23,29 @@ dotenv.config()
 const app = express()
 
 
-app.use(express.json()) 
-app.use(express.urlencoded({ extended: true })) 
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 
 app.use(cookieParser())
 
 app.use(cors({
     origin: "http://localhost:5173",
     methods: "POST,GET, PUT,PATCH,DELETE",
-    credentials: true 
+    credentials: true
 }))
 
 
 //4. routes 
 app.use("/api/auth", authRoutes),
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+    app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use("/api/users", userRoutes),
-app.use("/api/donorprofile",donorProfileRoutes),
-app.use("/api/beneficiaryprofile",beneficiaryRoutes)
-app.use("/api/organizerprofile",organizerRoutes)
-app.use("/api/communityprofile",communityRoutes)
-app.use("/api/companyprofile",companyRoutes)
- app.use('/api/donations', donationRoutes)
+    app.use("/api/donorprofile", donorProfileRoutes),
+    app.use("/api/beneficiaryprofile", beneficiaryRoutes)
+app.use("/api/organizerprofile", organizerRoutes)
+app.use("/api/communityprofile", communityRoutes)
+app.use("/api/companyprofile", companyRoutes)
+app.use('/api/donations', donationRoutes)
+app.use('/api/matchedDonations', matchedDonationRoutes)
 
 
 
