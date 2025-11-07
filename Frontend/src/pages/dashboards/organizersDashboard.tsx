@@ -1,146 +1,187 @@
-import React from 'react';
-import type{ OrganizerStat, VerificationTask } from '../../types/organizer';
-import '../../styles/organizer.css'
+import React, { useEffect, useState } from "react";
+import { useAuth } from "../../context/authContext";
+import { apiCall } from "../../utils/api";
+import DashboardLayout from "../../Layouts/organizerLayout";
 
+const VolunteerDashboard: React.FC = () => {
+  const { user, token, loading } = useAuth();
 
-// --- Mock Data ---
+  const [stats, setStats] = useState({
+    verifiedDonors: 0,
+    verifiedBeneficiaries: 0,
+    pendingVerifications: 0,
+    matchedDonations: 0,
+  });
+  const [pendingVerifications, setPendingVerifications] = useState<any[]>([]);
+  const [deliveryLogs, setDeliveryLogs] = useState<any[]>([]);
+  const [profile, setProfile] = useState<any>(null);
 
-const organizerStats: OrganizerStat[] = [
-  { id: 1, label: 'Tasks Pending', value: 24, iconClass: 'fas fa-clipboard-list', bgColor: 'blue' },
-  { id: 2, label: 'Today\'s Deliveries', value: 7, iconClass: 'fas fa-shipping-fast', bgColor: 'green' },
-  { id: 3, label: 'Items Flagged', value: 3, iconClass: 'fas fa-exclamation-triangle', bgColor: 'yellow' },
-  { id: 4, label: 'Avg. Verification Time', value: '4.2 hrs', iconClass: 'fas fa-clock', bgColor: 'purple' },
-];
+  // === Fetch Overview and Pending Verifications ===
+  useEffect(() => {
+    if (!token || loading) return;
 
-const verificationTasks: VerificationTask[] = [
-  {
-    id: 't001',
-    type: 'Donation',
-    title: 'Food Baskets (20kg)',
-    priority: 'High',
-    location: '1.2 km away',
-    timeRemaining: '2 hours',
-    status: 'Pending Verification',
-    donorName: 'Sarah K.',
-  },
-  {
-    id: 't002',
-    type: 'Distribution',
-    title: 'School Supplies to City Shelter',
-    priority: 'Medium',
-    location: '3.5 km away',
-    timeRemaining: '4 hours',
-    status: 'Ready for Pickup',
-    beneficiaryName: 'City Youth Center',
-  },
-  {
-    id: 't003',
-    type: 'User',
-    title: 'New Beneficiary Registration',
-    priority: 'Low',
-    location: 'Remote',
-    timeRemaining: '1 day',
-    status: 'New',
-  },
-];
-// --- End Mock Data ---
+    const fetchOverview = async () => {
+      try {
+        const res = await apiCall("/api/organizerProfile/overview", "GET", undefined, token ?? undefined);
+        setStats(res.data || res);
+      } catch (error) {
+        console.error("Error fetching overview:", error);
+      }
+    };
 
+    const fetchPending = async () => {
+      try {
+        const res = await apiCall("/api/organizerProfile/pending-verifications", "GET", undefined, token ?? undefined);
+        setPendingVerifications(res.data || res);
+      } catch (error) {
+        console.error("Error fetching pending verifications:", error);
+      }
+    };
 
-// Reusable Stat Card Component (Inline for simplicity, separate to a file in production)
-const OrganizerStatCard: React.FC<{ stat: OrganizerStat }> = ({ stat }) => {
-  const bgColorClass = `stat-${stat.bgColor}`;
-  return (
-    <div className={`organizer-stat-card ${bgColorClass}`}>
-      <div className="stat-icon-wrapper">
-        <i className={stat.iconClass}></i>
-      </div>
-      <div className="stat-info">
-        <span className="stat-value">{stat.value}</span>
-        <span className="stat-label">{stat.label}</span>
-      </div>
-    </div>
-  );
-};
+    const fetchDeliveryLogs = async () => {
+      try {
+        const res = await apiCall("/api/organizerProfile/delivery-logs", "GET", undefined, token ?? undefined);
+        setDeliveryLogs(res.data || res);
+      } catch (error) {
+        console.error("Error fetching delivery logs:", error);
+      }
+    };
 
-// Verification Task Row (Inline for simplicity)
-const VerificationTaskRow: React.FC<{ task: VerificationTask }> = ({ task }) => {
-  const statusClass = task.status.toLowerCase().replace(/\s/g, '-');
-  const priorityClass = `priority-${task.priority.toLowerCase()}`;
-  
-  const getDetails = () => {
-    if (task.type === 'Donation') {
-      return `Donor: ${task.donorName || 'N/A'}`;
+    fetchOverview();
+    fetchPending();
+    fetchDeliveryLogs();
+  }, [token, loading]);
+
+  // === Fetch Profile ===
+  useEffect(() => {
+    if (!user?.user_id || !token) return;
+
+    const fetchProfile = async () => {
+      try {
+        const res = await apiCall(
+          `/api/organizerProfile/${user.user_id}/profile`,
+          "GET",
+          undefined,
+          token ?? undefined
+        );
+        setProfile(res);
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      }
+    };
+
+    fetchProfile();
+  }, [user, token]);
+
+  // === Actions ===
+  const handleApprove = async (id: number) => {
+    try {
+      await apiCall(`/api/organizerProfile/verify/${id}`, "PUT", { action: "approve" }, token ?? undefined);
+      alert("Approved successfully!");
+      // Refresh pending verifications
+      const res = await apiCall("/api/organizerProfile/pending-verifications", "GET", undefined, token ?? undefined);
+      setPendingVerifications(res.data || res);
+    } catch (error: any) {
+      alert(error.message || "Failed to approve");
     }
-    if (task.type === 'Distribution') {
-      return `To: ${task.beneficiaryName || 'N/A'}`;
-    }
-    return `Type: ${task.type}`;
   };
-  
+
+  const handleReject = async (id: number) => {
+    try {
+      await apiCall(`/api/organizerProfile/verify/${id}`, "PUT", { action: "reject" }, token ?? undefined);
+      alert("Rejected successfully!");
+      // Refresh pending verifications
+      const res = await apiCall("/api/organizerProfile/pending-verifications", "GET", undefined, token ?? undefined);
+      setPendingVerifications(res.data || res);
+    } catch (error: any) {
+      alert(error.message || "Failed to reject");
+    }
+  };
+
+  const handleDelivered = (donation: string) => {
+    alert(`${donation} marked as delivered`);
+  };
+
+  if (loading) return <p>Loading...</p>;
+
   return (
-    <div className="task-row">
-      <div className={`task-priority ${priorityClass}`}></div>
-      <div className="task-main-info">
-        <span className="task-title">{task.title}</span>
-        <span className="task-details">{getDetails()}</span>
-      </div>
-      <div className="task-metadata">
-        <span className="metadata-item location-item"><i className="fas fa-location-dot"></i> {task.location}</span>
-        <span className="metadata-item time-item"><i className="fas fa-hourglass-half"></i> {task.timeRemaining}</span>
-      </div>
-      <span className={`task-status ${statusClass}`}>{task.status}</span>
-      <button className="view-task-btn">Review <i className="fas fa-arrow-right"></i></button>
-    </div>
+    <DashboardLayout profile={profile}>
+      <h1>Volunteer Dashboard</h1>
+
+      {/* ==== OVERVIEW ==== */}
+      <section className="overview2">
+        <div className="card2"><h3>Verified Donors</h3><p>{stats.verifiedDonors}</p></div>
+        <div className="card2"><h3>Verified Beneficiaries</h3><p>{stats.verifiedBeneficiaries}</p></div>
+        <div className="card2"><h3>Pending Verifications</h3><p>{stats.pendingVerifications}</p></div>
+        <div className="card2"><h3>Matched Donations</h3><p>{stats.matchedDonations}</p></div>
+      </section>
+
+      {/* ==== PENDING VERIFICATIONS ==== */}
+      <section className="table-section2">
+        <h2>Pending Verifications</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Role</th>
+              <th>ID Proof</th>
+              <th>Recommendation</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pendingVerifications.length > 0 ? (
+              pendingVerifications.map((person) => (
+                <tr key={person.user_id}>
+                  <td>{person.full_name}</td>
+                  <td>{person.role}</td>
+                  <td><a href={person.id_proof_url}>View ID</a></td>
+                  <td>{person.recommendation_url ? <a href={person.recommendation_url}>View</a> : "—"}</td>
+                  <td><span className="status pending">Pending</span></td>
+                  <td>
+                    <button className="approve" onClick={() => handleApprove(person.user_id)}>Approve</button>
+                    <button className="reject" onClick={() => handleReject(person.user_id)}>Reject</button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr><td colSpan={6}>No pending verifications</td></tr>
+            )}
+          </tbody>
+        </table>
+      </section>
+
+      {/* ==== DELIVERY LOGS ==== */}
+      <section className="table-section2">
+        <h2>Delivery Logs</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Donation</th>
+              <th>Beneficiary</th>
+              <th>Status</th>
+              <th>Update</th>
+            </tr>
+          </thead>
+          <tbody>
+            {deliveryLogs.length > 0 ? (
+              deliveryLogs.map((log, index) => (
+                <tr key={index}>
+                  <td>{log.donation}</td>
+                  <td>{log.beneficiary}</td>
+                  <td><span className="status in-transit">{log.status}</span></td>
+                  <td><button className="approve" onClick={() => handleDelivered(log.donation)}>Delivered</button></td>
+                </tr>
+              ))
+            ) : (
+              <tr><td colSpan={4}>No delivery logs found</td></tr>
+            )}
+          </tbody>
+        </table>
+      </section>
+    </DashboardLayout>
   );
 };
 
-
-const OrganizerDashboard: React.FC = () => {
-  return (
-    <div className="organizer-page-container">
-      <header className="page-header">
-        <h1>Organizer Verification Dashboard</h1>
-        <p>Your hub for ensuring trust and efficient resource movement in the community.</p>
-        <button className="new-report-btn"><i className="fas fa-plus"></i> Submit New Report</button>
-      </header>
-
-      {/* Organizer Stats/KPIs */}
-      <section className="organizer-stats-section">
-        {organizerStats.map(stat => (
-          <OrganizerStatCard key={stat.id} stat={stat} />
-        ))}
-      </section>
-
-      {/* Verification Tasks Table */}
-      <section className="verification-tasks-section">
-        <div className="section-header">
-            <h2>Verification Queue <span className="task-count">({verificationTasks.length})</span></h2>
-            <div className="task-filters">
-                <button className="filter-btn active">All Tasks</button>
-                <button className="filter-btn">High Priority</button>
-                <button className="filter-btn">Distribution</button>
-            </div>
-        </div>
-        
-        <div className="task-list-header task-row">
-            <span>Task Title</span>
-            <span>Location / Time</span>
-            <span>Status</span>
-            <span>Action</span>
-        </div>
-
-        <div className="task-list">
-            {verificationTasks.map(task => (
-                <VerificationTaskRow key={task.id} task={task} />
-            ))}
-        </div>
-
-        <div className="tasks-footer">
-            <button className="load-more-btn">Load More Tasks</button>
-        </div>
-      </section>
-    </div>
-  );
-};
-
-export default OrganizerDashboard;
+export default VolunteerDashboard;
