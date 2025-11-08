@@ -407,5 +407,69 @@ export const revokeVerifiedProfile = asyncHandler(async (req: Request, res: Resp
   }
 });
 
+export const updateOrganizer = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.params.userId;
+  const { phone, city, state_region, about_me } = req.body;
 
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    // 🟢 Update users table (only phone can change)
+    await client.query(
+      `
+      UPDATE users
+      SET phone = COALESCE($1, phone), updated_at = NOW()
+      WHERE user_id = $2;
+      `,
+      [phone, userId]
+    );
+
+    // 🟢 Update organizer_profiles table (use COALESCE)
+    const updateProfileQuery = `
+      UPDATE organizer_profiles
+      SET city = COALESCE($1, city),
+          state_region = COALESCE($2, state_region),
+          about_me = COALESCE($3, about_me),
+          updated_at = NOW()
+      WHERE user_id = $4
+      RETURNING *;
+    `;
+    const updatedProfileResult = await client.query(updateProfileQuery, [
+      city,
+      state_region,
+      about_me,
+      userId,
+    ]);
+
+    // 🟢 Fetch the updated phone from users table to include in response
+    const userResult = await client.query(
+      `SELECT full_name, email, phone FROM users WHERE user_id = $1;`,
+      [userId]
+    );
+    const user = userResult.rows[0];
+
+    await client.query("COMMIT");
+
+    // Combine organizer_profiles + phone from users
+    const updatedProfile = {
+      ...updatedProfileResult.rows[0],
+      phone: user.phone,
+      full_name: user.full_name,
+      email: user.email,
+    };
+
+    res.status(200).json({
+      message: "Profile updated successfully.",
+      profile: updatedProfile,
+    });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Error updating organizer profile:", error);
+    res.status(500).json({ message: "Server error while updating profile." });
+  } finally {
+    client.release();
+  }
+});
 
