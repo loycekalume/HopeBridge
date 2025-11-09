@@ -14,8 +14,8 @@ const Sidebar: React.FC = () => {
 
       <nav className="menu">
         <Link
-          to="/community-dashboard"
-          className={location.pathname === "/community-dashboard" ? "active" : ""}
+          to="/community"
+          className={location.pathname === "/community" ? "active" : ""}
         >
           Dashboard Overview
         </Link>

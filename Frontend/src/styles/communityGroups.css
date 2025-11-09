@@ -6,12 +6,56 @@ body {
   background-color: #f4f6f9;
   color: #333;
 }
-
 .dashboard-container3 {
-  display: grid;
-  grid-template-columns: 250px 1fr 300px;
+  display: flex;
   min-height: 100vh;
+  background-color: #f9f9f9;
+  font-family: 'Inter', sans-serif;
 }
+
+.main-content3 {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+/* Header */
+.header h1 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.btn-add {
+  background-color: #4f46e5;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.btn-add:hover {
+  background-color: #4338ca;
+}
+
+/* Search input */
+.search-input {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #d1d5db;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.search-input:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+}
+
 
 /* Sidebar */
 .sidebar3 {
@@ -84,6 +128,59 @@ body {
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
+.events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Event card */
+.event-card {
+  background-color: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.event-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+.event-card h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: #111827;
+}
+
+.event-card p {
+  font-size: 0.95rem;
+  color: #4b5563;
+  margin-bottom: 0.25rem;
+}
+
+/* Event actions buttons */
+.event-actions button {
+  background-color: #e5e7eb;
+  border: none;
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.event-actions button:hover {
+  background-color: #d1d5db;
+}
+
+.edit-btn {
+  color: #2563eb;
+}
+
+.delete-btn {
+  color: #dc2626;
+}
 /* Profile Card */
 .profile-card3 {
   background: #fff;

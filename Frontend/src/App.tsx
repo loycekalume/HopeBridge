@@ -15,6 +15,7 @@ import PendingVerificationsPage from "./components/organizers/pendingVerificatio
 import ApprovedRequests from "./components/organizers/approvedRequests";
 import MatchedDonations from "./components/organizers/matchedDonations"; // ✅ import this page
 import CommunityEvents from "./components/organizers/communityEvents";
+import ManageEvents from "./components/community/events";
  // optional if you have this
 
 function App() {
@@ -45,8 +46,8 @@ function App() {
           <Route path="/matched-donations" element={<MatchedDonations />} /> 
           <Route path="/community-events" element={<CommunityEvents />} />
 
-        
-
+        {/* Community Pages */}
+  <Route path="/manage-events" element={<ManageEvents />} />
         </Routes>
       </Router>
     </AuthProvider>
