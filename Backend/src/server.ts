@@ -13,6 +13,7 @@ import communityRoutes from './routes/communityRoutes'
 import companyRoutes from './routes/companyRoutes'
 import donationRoutes from './routes/donationRoutes'
 import matchedDonationRoutes from './routes/matchedDonationRoutes';
+import communityEvents from './routes/communityEvents';
 
 
 
@@ -37,15 +38,16 @@ app.use(cors({
 
 //4. routes 
 app.use("/api/auth", authRoutes),
-    app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use("/api/users", userRoutes),
-    app.use("/api/donorprofile", donorProfileRoutes),
-    app.use("/api/beneficiaryprofile", beneficiaryRoutes)
+app.use("/api/donorprofile", donorProfileRoutes),
+app.use("/api/beneficiaryprofile", beneficiaryRoutes)
 app.use("/api/organizerprofile", organizerRoutes)
 app.use("/api/communityprofile", communityRoutes)
 app.use("/api/companyprofile", companyRoutes)
 app.use('/api/donations', donationRoutes)
 app.use('/api/matchedDonations', matchedDonationRoutes)
+app.use('/api/events', communityEvents)
 
 
 
