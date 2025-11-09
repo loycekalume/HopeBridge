@@ -1,7 +1,9 @@
 import express from "express";
 
-import {updateCommunityProfile} from "../controllers/communityProfile";
+import {editCommunityProfile, getCommunityProfile, updateCommunityProfile} from "../controllers/communityProfile";
 const router = express.Router();
 router.put('/:userId/profile/community', updateCommunityProfile);
+router.put('/:userId/profile', editCommunityProfile);
+router.get('/:userId/profile/community', getCommunityProfile);
 
 export default router;
