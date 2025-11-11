@@ -52,7 +52,8 @@ const ManageEvents: React.FC = () => {
   const handleSave = async () => {
     if (!safeToken || !user) return;
 
-    const payload = { ...form, created_by: user.user_id }; // include logged-in user
+    const payload = { ...form, created_by: user.user_id, community_id: user.user_id };
+ // include logged-in user
 
     try {
       if (editingEvent) {

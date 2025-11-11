@@ -25,12 +25,7 @@ const Sidebar: React.FC = () => {
         >
           Manage Events
         </Link>
-        <Link
-          to="/donations"
-          className={location.pathname === "/donations" ? "active" : ""}
-        >
-          Donations
-        </Link>
+      
         <Link
           to="/impact-reports"
           className={location.pathname === "/impact-reports" ? "active" : ""}
@@ -38,10 +33,10 @@ const Sidebar: React.FC = () => {
           Impact Reports
         </Link>
         <Link
-          to="/volunteers"
-          className={location.pathname === "/volunteers" ? "active" : ""}
+          to="/members"
+          className={location.pathname === "/members" ? "active" : ""}
         >
-          Volunteers
+          Community Members
         </Link>
         <Link to="/logout" className="logout">
           Logout

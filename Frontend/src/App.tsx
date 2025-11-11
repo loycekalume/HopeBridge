@@ -16,7 +16,9 @@ import ApprovedRequests from "./components/organizers/approvedRequests";
 import MatchedDonations from "./components/organizers/matchedDonations"; // ✅ import this page
 import CommunityEvents from "./components/organizers/communityEvents";
 import ManageEvents from "./components/community/events";
- // optional if you have this
+import CommunityMembers from "./components/community/communityMembers";
+import CommunityImpact from "./components/community/impacts";
+// optional if you have this
 
 function App() {
   return (
@@ -43,11 +45,13 @@ function App() {
           {/* Organizer pages */}
           <Route path="/pending-verifications" element={<PendingVerificationsPage />} />
           <Route path="/approvedRequests" element={<ApprovedRequests />} />
-          <Route path="/matched-donations" element={<MatchedDonations />} /> 
+          <Route path="/matched-donations" element={<MatchedDonations />} />
           <Route path="/community-events" element={<CommunityEvents />} />
 
-        {/* Community Pages */}
-  <Route path="/manage-events" element={<ManageEvents />} />
+          {/* Community Pages */}
+          <Route path="/manage-events" element={<ManageEvents />} />
+          <Route path="/members" element={<CommunityMembers />} />
+          <Route path="/impact-reports" element={<CommunityImpact />} />
         </Routes>
       </Router>
     </AuthProvider>
