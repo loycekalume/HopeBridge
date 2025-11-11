@@ -5,39 +5,45 @@ import asyncHandler from "../middlewares/asyncHandler";
 
 // CREATE /api/events
 export const createEvent = asyncHandler(async (req: Request, res: Response) => {
-    const { title, date, category, description, created_by } = req.body;
+  const { title, date, category, description, created_by, community_id } = req.body;
 
-    // Validate required fields
-    if (!title || !date || !category || !created_by) {
-        res.status(400).json({ message: "Missing required fields: title, date, category, or created_by." });
-        return;
-    }
+  if (!title || !date || !category || !created_by) {
+    res.status(400).json({ message: "Missing required fields: title, date, category, or created_by." });
+    return;
+  }
 
-    const client = await pool.connect();
-    try {
-        await client.query("BEGIN");
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
 
-        const insertQuery = `
-            INSERT INTO events (title, date, category, description, created_by)
-            VALUES ($1, $2, $3, $4, $5)
-            RETURNING *;
-        `;
+    const insertQuery = `
+      INSERT INTO events (title, date, category, description, created_by, community_id)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING *;
+    `;
 
-        const result = await client.query(insertQuery, [title, date, category, description, created_by]);
+    const result = await client.query(insertQuery, [
+      title,
+      date,
+      category,
+      description,
+      created_by,
+      community_id ?? null, // optional
+    ]);
 
-        await client.query("COMMIT");
+    await client.query("COMMIT");
 
-        res.status(201).json({
-            message: "Event created successfully.",
-            event: result.rows[0],
-        });
-    } catch (error) {
-        await client.query("ROLLBACK");
-        console.error("Error creating event:", error);
-        res.status(500).json({ message: "Server error while creating event." });
-    } finally {
-        client.release();
-    }
+    res.status(201).json({
+      message: "Event created successfully.",
+      event: result.rows[0],
+    });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Error creating event:", error);
+    res.status(500).json({ message: "Server error while creating event." });
+  } finally {
+    client.release();
+  }
 });
 
 // UPDATE /api/events/:eventId
