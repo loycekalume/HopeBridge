@@ -20,6 +20,7 @@ import CommunityMembers from "./components/community/communityMembers";
 import CommunityImpact from "./components/community/impacts";
 import AdminUsers from "./components/admin/adminUsers";
 import AdminCommunities from "./components/admin/adminCommunities";
+import AdminEvents from "./components/admin/adminEvents";
 // optional if you have this
 
 function App() {
@@ -58,6 +59,7 @@ function App() {
           {/* Admin pages */}
            <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/communities" element={<AdminCommunities/>} />
+                <Route path="/admin/events" element={<AdminEvents/>} />
         </Routes>
       </Router>
     </AuthProvider>
