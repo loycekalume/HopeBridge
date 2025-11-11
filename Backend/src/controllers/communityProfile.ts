@@ -84,6 +84,39 @@ WHERE u.user_id = $1;
   }
 });
 
+export const getAllCommunities = asyncHandler(async (req: Request, res: Response) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        u.user_id, 
+        u.full_name, 
+        u.email, 
+        u.phone, 
+        u.created_at,
+        c.org_focus, 
+        c.street_address, 
+        c.city, 
+        c.state_region, 
+        c.about_organization, 
+        c.verification_status,
+        c.fundraising_goal,
+        c.total_raised,
+        c.impact_description
+      FROM users u
+      JOIN community_profiles c ON u.user_id = c.user_id
+      ORDER BY u.created_at DESC
+    `);
+
+    res.status(200).json({
+      count: result.rows.length,
+      communities: result.rows,
+    });
+  } catch (error) {
+    console.error("Error fetching all community profiles:", error);
+    res.status(500).json({ message: "Server error while fetching communities." });
+  }
+});
+
 // @desc Update Community Profile
 // @route PUT /api/users/:userId/profile/community
 // @access Private
