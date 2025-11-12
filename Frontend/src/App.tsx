@@ -21,6 +21,7 @@ import CommunityImpact from "./components/community/impacts";
 import AdminUsers from "./components/admin/adminUsers";
 import AdminCommunities from "./components/admin/adminCommunities";
 import AdminEvents from "./components/admin/adminEvents";
+import AdminReports from "./components/admin/adminReports";
 // optional if you have this
 
 function App() {
@@ -57,9 +58,10 @@ function App() {
           <Route path="/impact-reports" element={<CommunityImpact />} />
 
           {/* Admin pages */}
-           <Route path="/admin/users" element={<AdminUsers />} />
-            <Route path="/admin/communities" element={<AdminCommunities/>} />
-                <Route path="/admin/events" element={<AdminEvents/>} />
+          <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/admin/communities" element={<AdminCommunities />} />
+          <Route path="/admin/events" element={<AdminEvents />} />
+          <Route path="/admin/reports" element={<AdminReports />} />
         </Routes>
       </Router>
     </AuthProvider>
