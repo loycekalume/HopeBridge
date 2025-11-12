@@ -1,3 +1,4 @@
+// api.ts
 export const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 export async function apiCall(
@@ -13,6 +14,7 @@ export async function apiCall(
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: body ? JSON.stringify(body) : undefined,
+    credentials: "include",
   });
 
   if (!res.ok) {

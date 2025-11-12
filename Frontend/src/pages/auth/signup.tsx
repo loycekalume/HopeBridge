@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "../../styles/signup.css";
+import { apiCall} from "../../utils/api"; 
 import { Link, useNavigate } from "react-router-dom"; // <-- Keep necessary imports
 
 // The useAuth hook import is REMOVED here, as it's not needed for signup.
@@ -37,43 +38,34 @@ export default function Signup() {
     setError(null);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedRole) {
-      setError("Please select a role before proceeding.");
-      return;
-    }
+ 
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!selectedRole) {
+    setError("Please select a role before proceeding.");
+    return;
+  }
 
-    setIsLoading(true);
-    setError(null);
+  setIsLoading(true);
+  setError(null);
 
-    try {
-      const res = await fetch("http://localhost:3000/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, password_hash: formData.password, role: selectedRole }),
-        credentials: "include",
-      });
+  try {
+    // Use apiCall helper instead of fetch directly
+   await apiCall("/api/auth/register", "POST", {
+      ...formData,
+      password_hash: formData.password,
+      role: selectedRole,
+    });
 
-      const data = await res.json();
-
-      if (res.ok) {
-        alert("Account successfully created! Please log in.");
-        // Redirect immediately to Login, letting the Login page handle the profile check.
-        navigate("/login", { replace: true });
-
-      } else {
-        // Handle backend errors (e.g., "User already exists")
-        setError(data.message || "Signup failed. Please check your details.");
-      }
-    } catch (err) {
-      console.error("Error signing up:", err);
-      setError("Network error. Could not connect to the server.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+    alert("Account successfully created! Please log in.");
+    navigate("/login", { replace: true });
+  } catch (err: any) {
+    console.error("Error signing up:", err);
+    setError(err.message || "Network error. Could not connect to the server.");
+  } finally {
+    setIsLoading(false);
+  }
+};
   const currentRole = roles.find(r => r.key === selectedRole);
 
   return (
