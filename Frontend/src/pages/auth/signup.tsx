@@ -99,7 +99,7 @@ const handleSubmit = async (e: React.FormEvent) => {
           <>
             <div className="signup-title">Create Account</div>
             <div className="signup-subtitle">
-              Role: {currentRole?.label || selectedRole} <span className="back-link" onClick={() => setSelectedRole(null)}>(Change)</span>
+              Role: {currentRole?.label || selectedRole} <span className="back-link" onClick={() => setSelectedRole(null)}>(Change Role)</span>
             </div>
 
             <form className="signup-form" onSubmit={handleSubmit}>
