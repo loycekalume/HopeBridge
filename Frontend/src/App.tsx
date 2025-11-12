@@ -13,7 +13,7 @@ import ProfileWizard from "./pages/routes/profileRoutes";
 import DonationsPage from "./pages/dashboards/donations";
 import PendingVerificationsPage from "./components/organizers/pendingVerifications";
 import ApprovedRequests from "./components/organizers/approvedRequests";
-import MatchedDonations from "./components/organizers/matchedDonations"; // ✅ import this page
+import MatchedDonations from "./components/organizers/matchedDonations"; 
 import CommunityEvents from "./components/organizers/communityEvents";
 import ManageEvents from "./components/community/events";
 import CommunityMembers from "./components/community/communityMembers";
@@ -22,6 +22,9 @@ import AdminUsers from "./components/admin/adminUsers";
 import AdminCommunities from "./components/admin/adminCommunities";
 import AdminEvents from "./components/admin/adminEvents";
 import AdminReports from "./components/admin/adminReports";
+import CompanyCampaigns from "./components/company/campaigns";
+import CompanyImpacts from "./components/company/impact";
+import CompanyDonations from "./components/company/donations";
 // optional if you have this
 
 function App() {
@@ -62,6 +65,11 @@ function App() {
           <Route path="/admin/communities" element={<AdminCommunities />} />
           <Route path="/admin/events" element={<AdminEvents />} />
           <Route path="/admin/reports" element={<AdminReports />} />
+
+          {/* Company pages */}
+          <Route path="/company/campaigns" element={<CompanyCampaigns />} />
+          <Route path="/company/donations" element={<CompanyDonations />} />
+          <Route path="/company/impacts" element={<CompanyImpacts />} />
         </Routes>
       </Router>
     </AuthProvider>
