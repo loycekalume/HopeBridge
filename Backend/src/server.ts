@@ -16,6 +16,7 @@ import matchedDonationRoutes from './routes/matchedDonationRoutes';
 import communityEvents from './routes/communityEvents';
 import communityMembers from './routes/communityMembers';
 import adminRoutes from './routes/adminRoutes';
+import campaignRoutes from './routes/campaignRoutes';
 
 
 
@@ -52,6 +53,7 @@ app.use('/api/matchedDonations', matchedDonationRoutes)
 app.use('/api/events', communityEvents)
 app.use("/api/communities", communityMembers);
 app.use("/api/admin", adminRoutes);
+app.use("/api/campaigns",campaignRoutes);
 
 
 
