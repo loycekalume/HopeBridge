@@ -36,7 +36,7 @@ app.use(cookieParser())
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
-   process.env.FRONTEND_URL,
+   process.env.FRONTEND_URL,, 
 ];
 app.use(cors({
   origin: function (origin, callback) {
