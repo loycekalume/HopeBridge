@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Home, Heart, Users, LogOut } from "lucide-react";
-import "../../styles/sidebar.css";
+import "../../styles/donorDashboard.css";
 import { useAuth } from "../../context/authContext";
 
 const Sidebar: React.FC = () => {

@@ -1,6 +1,6 @@
 import React from "react";
 import Sidebar from "./sidebar";
-import "../../styles/dashboardLayout.css";
+import "../../styles/donorDashboard.css";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
