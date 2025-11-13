@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/authContext';
 import type { CommunityProfileData } from '../../types/community'; 
 import { FaUpload, FaCheckSquare, FaArrowRight } from 'react-icons/fa'; 
+import { apiCall } from '../../utils/api'; 
 
 // --- Organizer Type Definition ---
 const focusAreas = ['Elderly Care', 'Education', 'Childrens Home', 'Skills Training', 'Other'];
@@ -213,42 +214,42 @@ export default function CommunityProfileWizard() {
         setStep(step + 1);
     };
 
-    const handleFinish = async () => {
-        const d = profileData;
-        
-        // Final Validation: Check BOTH required documents
-        if (!d.gov_id_url || !d.group_reg_cert_url) {
-            setError("You must upload both the Representative ID and the Group Registration Certificate.");
-            return;
-        }
+   
 
-        setIsLoading(true);
-        setError(null);
-        
-        try {
-            // API call to the NEW Community endpoint
-            const res = await fetch(`http://localhost:3000/api/communityprofile/${user.user_id}/profile/community`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(profileData), 
-            });
+const handleFinish = async () => {
+    const d = profileData;
 
-            const data = await res.json();
-            
-            if (res.ok) {
-                authLogin(data.accessToken, { ...user, is_profile_complete: true }); 
+    // Final validation: check both required documents
+    if (!d.gov_id_url || !d.group_reg_cert_url) {
+        setError("You must upload both the Representative ID and the Group Registration Certificate.");
+        return;
+    }
 
-                alert("Profile submitted! Your group status will be reviewed.");
-                navigate('/community', { replace: true }); 
-            } else {
-                setError(data.message || "Failed to save profile. Please try again.");
-            }
-        } catch (err) {
-            setError("Network error during profile submission.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    setIsLoading(true);
+    setError(null);
+
+    try {
+        // ✅ Use centralized API helper
+        const data = await apiCall(
+            `/api/communityprofile/${user.user_id}/profile/community`,
+            'PUT',
+            profileData
+        );
+
+        // Update Auth Context to mark profile complete
+        authLogin(data.accessToken, { ...user!, is_profile_complete: true });
+
+        alert("Profile submitted! Your group status will be reviewed.");
+        navigate('/community', { replace: true });
+
+    } catch (err: any) {
+        console.error("Profile submission error:", err);
+        setError(err.message || "Network error during profile submission.");
+    } finally {
+        setIsLoading(false);
+    }
+};
+
 
     const renderStep = () => {
         switch (step) {
