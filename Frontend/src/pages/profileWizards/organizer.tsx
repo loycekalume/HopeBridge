@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/authContext';
 import type { OrganizerProfileData } from '../../types/organizer'; 
 import { FaUpload, FaCheckSquare, FaArrowRight } from 'react-icons/fa'; 
+import { apiCall } from '../../utils/api'; 
 
 // --- Organizer Type Definition ---
 const organizerTypes = ['NGO Rep', 'Social Worker', 'Community Leader', 'Other'];
@@ -220,42 +221,41 @@ export default function OrganizerProfileWizard() {
         setStep(step + 1);
     };
 
-    const handleFinish = async () => {
-        const d = profileData;
-        
-        // Final Validation: Check BOTH required documents
-        if (!d.gov_id_url || !d.professional_cert_url) {
-            setError("You must upload both the Government ID and the Professional Certificate/ID.");
-            return;
-        }
+  // ✅ Make sure to import apiCall
 
-        setIsLoading(true);
-        setError(null);
-        
-        try {
-            // API call to the NEW Organizer endpoint
-            const res = await fetch(`http://localhost:3000/api/organizerprofile/${user.user_id}/profile/organizer`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(profileData), 
-            });
+const handleFinish = async () => {
+    const d = profileData;
 
-            const data = await res.json();
-            
-            if (res.ok) {
-                authLogin(data.accessToken, { ...user, is_profile_complete: true }); 
+    // Validation: Ensure both required documents are uploaded
+    if (!d.gov_id_url || !d.professional_cert_url) {
+        setError("You must upload both the Government ID and the Professional Certificate/ID.");
+        return;
+    }
 
-                alert("Profile submitted! You will be notified once your organizer status is verified.");
-                navigate('/organizer', { replace: true }); 
-            } else {
-                setError(data.message || "Failed to save profile. Please try again.");
-            }
-        } catch (err) {
-            setError("Network error during profile submission.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    setIsLoading(true);
+    setError(null);
+
+    try {
+        // ✅ Use centralized API helper
+        const data = await apiCall(
+            `/api/organizerprofile/${user.user_id}/profile/organizer`,
+            'PUT',
+            profileData
+        );
+
+        // Update Auth Context with profile completion
+        authLogin(data.accessToken, { ...user!, is_profile_complete: true });
+
+        alert("Profile submitted! You will be notified once your organizer status is verified.");
+        navigate('/organizer', { replace: true });
+
+    } catch (err: any) {
+        console.error("Profile submission error:", err);
+        setError(err.message || "Network error during profile submission.");
+    } finally {
+        setIsLoading(false);
+    }
+};
 
     const renderStep = () => {
         switch (step) {
