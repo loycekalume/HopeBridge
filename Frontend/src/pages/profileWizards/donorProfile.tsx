@@ -6,6 +6,7 @@ import { useAuth } from '../../context/authContext';
 import type { DonorProfileData } from '../../types/donorProfile';
 import '../../styles/donorProfile.css';
 import { FaUpload, FaCheckSquare } from 'react-icons/fa'; 
+ import { apiCall } from '../../utils/api'; 
 
 // --- Sub-Components ---
 
@@ -140,7 +141,7 @@ export default function DonorProfileWizard() {
     const isCompany = currentUserRole === 'company'; // Defined here for passing to sub-components
 
 
-    // 🔥 FIX 3: Safety Check and Redirection using useEffect (Resolves 'navigate()' warning)
+    
     useEffect(() => {
         if (user === undefined) return; 
         setIsCheckingAuth(false);
@@ -204,48 +205,49 @@ export default function DonorProfileWizard() {
         setStep(step + 1);
     };
 
-    // FINAL CORRECTED handleFinish with Role-Specific Validation
-    const handleFinish = async () => {
-        const d = profileData;
-        
-        // 1. Universal Validation: Gov ID is required for ALL donors/companies
-        if (!d.gov_id_url) {
-            setError("Please upload the Government-Issued ID.");
-            return;
-        }
-        
-        // 2. Conditional Validation: Registration Cert is ONLY required for companies
-        if (isCompany && !d.registration_cert_url) {
-            setError("Please upload the Company Registration Certificate.");
-            return;
-        }
+ 
 
-        setIsLoading(true);
-        setError(null);
-        
-        try {
-            const res = await fetch(`http://localhost:3000/api/donorprofile/${user?.user_id}/profile/donor`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(profileData), 
-            });
+// inside DonorProfileWizard
+const handleFinish = async () => {
+  const d = profileData;
 
-            const data = await res.json();
-            
-            if (res.ok) {
-                authLogin(data.accessToken, { ...user!, is_profile_complete: true }); 
+  // 1. Universal Validation: Gov ID is required for ALL donors/companies
+  if (!d.gov_id_url) {
+    setError("Please upload the Government-Issued ID.");
+    return;
+  }
 
-                alert("Profile completed successfully!");
-                navigate('/donor', { replace: true }); 
-            } else {
-                setError(data.message || "Failed to save profile. Please try again.");
-            }
-        } catch (err) {
-            setError("Network error during profile submission.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
+  // 2. Conditional Validation: Registration Cert is ONLY required for companies
+  if (isCompany && !d.registration_cert_url) {
+    setError("Please upload the Company Registration Certificate.");
+    return;
+  }
+
+  setIsLoading(true);
+  setError(null);
+
+  try {
+    // ✅ Use centralized API helper
+    const data = await apiCall(
+      `/api/donorprofile/${user?.user_id}/profile/donor`,
+      'PUT',
+      profileData
+    );
+
+    // Update user in global auth context
+    authLogin(data.accessToken, { ...user!, is_profile_complete: true });
+
+    alert("Profile completed successfully!");
+    navigate('/donor', { replace: true });
+
+  } catch (err: any) {
+    console.error("Profile submission error:", err);
+    setError(err.message || "Network error during profile submission.");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
     const renderStep = () => {
         switch (step) {
