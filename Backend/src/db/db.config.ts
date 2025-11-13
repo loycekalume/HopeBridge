@@ -3,22 +3,15 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-
 const pool = new Pool({
-  host: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT),
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-})
-
-
-pool.query("SELECT NOW()", (err, res) => {
-  if (err) {
-    console.error(" Database connection failed:", err);
-  } else {
-    console.log(" Database connected at:", res.rows[0].now);
-  }
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false, // needed for Render’s managed Postgres
+  },
 });
+
+pool.connect()
+  .then(() => console.log("✅ Database connected successfully"))
+  .catch((err) => console.error("❌ Error connecting to database:", err));
 
 export default pool;

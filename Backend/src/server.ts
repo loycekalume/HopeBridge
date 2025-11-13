@@ -69,6 +69,7 @@ app.get('/', (req, res) => {
   res.send('Backend is running 🚀');
 });
 
+console.log("DATABASE_URL:", process.env.DATABASE_URL);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
