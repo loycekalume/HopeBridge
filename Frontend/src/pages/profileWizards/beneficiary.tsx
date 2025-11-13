@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/authContext';
-import type { BeneficiaryProfileData } from '../../types/beneficiary'; // New Interface
+import type { BeneficiaryProfileData } from '../../types/beneficiary';
+  import { apiCall } from '../../utils/api'; 
 
 import { FaUpload, FaCheckSquare, FaArrowRight } from 'react-icons/fa'; 
 
@@ -222,43 +223,42 @@ export default function BeneficiaryProfileWizard() {
         setStep(step + 1);
     };
 
-    const handleFinish = async () => {
-        const d = profileData;
-        
-        // Final Validation: Check Gov ID and Proof of Need (Recommendation Letter is Optional)
-        if (!d.gov_id_url || !d.proof_of_need_url) {
-            setError("You must upload both the Government ID and the Proof of Need document.");
-            return;
-        }
 
-        setIsLoading(true);
-        setError(null);
-        
-        try {
-            // API call to the Beneficiary endpoint
-            const res = await fetch(`http://localhost:3000/api/beneficiaryprofile/${user.user_id}/profile/beneficiary`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(profileData), 
-            });
 
-            const data = await res.json();
-            
-            if (res.ok) {
-                // Update Auth Context: Flip the status
-                authLogin(data.accessToken, { ...user!, is_profile_complete: true }); 
+const handleFinish = async () => {
+  const d = profileData;
 
-                alert("Profile submitted! Your application is now in the queue for verification.");
-                navigate('/beneficiary', { replace: true }); // Redirect to final dashboard
-            } else {
-                setError(data.message || "Failed to save profile. Please try again.");
-            }
-        } catch (err) {
-            setError("Network error during profile submission.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
+  // Final Validation: Check Gov ID and Proof of Need (Recommendation Letter is Optional)
+  if (!d.gov_id_url || !d.proof_of_need_url) {
+    setError("You must upload both the Government ID and the Proof of Need document.");
+    return;
+  }
+
+  setIsLoading(true);
+  setError(null);
+
+  try {
+    // ✅ Use centralized API helper
+    const data = await apiCall(
+      `/api/beneficiaryprofile/${user.user_id}/profile/beneficiary`,
+      'PUT',
+      profileData
+    );
+
+    // Update Auth Context: flip profile completion status
+    authLogin(data.accessToken, { ...user!, is_profile_complete: true });
+
+    alert("Profile submitted! Your application is now in the queue for verification.");
+    navigate('/beneficiary', { replace: true });
+
+  } catch (err: any) {
+    console.error("Profile submission error:", err);
+    setError(err.message || "Network error during profile submission.");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
     const renderStep = () => {
         switch (step) {
