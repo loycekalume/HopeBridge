@@ -53,7 +53,7 @@ const DonorDashboard: React.FC = () => {
   const { user, token } = useAuth();
   const [dashboardData, setDashboardData] = useState<DashboardData>(initialData);
   const [loading, setLoading] = useState(true);
-  const [, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null); // now used
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -67,13 +67,19 @@ const DonorDashboard: React.FC = () => {
     if (!user) return;
 
     setLoading(true);
+    setError(null); // reset error
     try {
-      const data: DashboardData = await apiCall("/api/donations/dashboard", "GET", undefined, token ?? undefined);
+      const data: DashboardData = await apiCall(
+        "/api/donations/dashboard",
+        "GET",
+        undefined,
+        token ?? undefined
+      );
 
       setDashboardData(data);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Dashboard fetch error:", err);
-      setError("Failed to load dashboard. Please check your backend server.");
+      setError(err.message || "Failed to load dashboard. Please check your backend server.");
     } finally {
       setLoading(false);
     }
@@ -136,6 +142,9 @@ const DonorDashboard: React.FC = () => {
           </button>
         </div>
 
+        {/* Show error if it exists */}
+        {error && <p className="error-message">{error}</p>}
+
         {/* Stats Section */}
         <div className="stats-grid">
           <div className="stat-card">
@@ -169,9 +178,7 @@ const DonorDashboard: React.FC = () => {
               ))}
             </div>
           ) : (
-            <p className="no-data">
-              No donations yet. Start by posting your first one!
-            </p>
+            <p className="no-data">No donations yet. Start by posting your first one!</p>
           )}
         </div>
       </div>
