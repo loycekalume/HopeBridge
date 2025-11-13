@@ -53,7 +53,7 @@ const DonorDashboard: React.FC = () => {
   const { user, token } = useAuth();
   const [dashboardData, setDashboardData] = useState<DashboardData>(initialData);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
