@@ -25,6 +25,7 @@ import AdminReports from "./components/admin/adminReports";
 import CompanyCampaigns from "./components/company/campaigns";
 import CompanyImpacts from "./components/company/impact";
 import CompanyDonations from "./components/company/donations";
+import MyDonations from "./components/donor/myDonations";
 // optional if you have this
 
 function App() {
@@ -45,6 +46,10 @@ function App() {
           <Route path="/organizer" element={<OrganizerDashboard />} />
           <Route path="/community" element={<CommunityDashboard />} />
           <Route path="/company" element={<CompanyDashboard />} />
+
+
+          {/* Donor pages */}
+             <Route path="/donor/donations" element={<MyDonations />} />
 
           {/* Beneficiary pages */}
           <Route path="/beneficiary/donations" element={<DonationsPage />} />

@@ -16,7 +16,7 @@ const Sidebar: React.FC = () => {
 
   return (
     <aside className="sidebar">
-      <div className="sidebar-logo">🌍 HopeBridge</div>
+      <div className="sidebar-logo"> HopeBridge</div>
 
       <div className="sidebar-links">
         {links.map(({ to, icon, label }) => (

@@ -263,3 +263,134 @@
 .logout-btn:hover {
   background: #d62839;
 }
+/* ===============================
+   HopeBridge Donation Page Styles
+   myDonations.css
+   Theme: Blue–Purple Modern UI
+================================ */
+
+/* Global container */
+.my-donations-container {
+    padding: 20px;
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    font-family: "Inter", sans-serif;
+}
+
+/* Page title */
+.my-donations-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #2d2a7c; /* deep purple */
+}
+
+/* Search + Filters row */
+.filters-row {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+/* Inputs & selects */
+.filters-row input,
+.filters-row select {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #d9d9d9;
+    background: #fff;
+    font-size: 0.95rem;
+    transition: 0.25s ease;
+}
+
+.filters-row input:focus,
+.filters-row select:focus {
+    border-color: #5d4dff; /* HopeBridge blue-purple */
+    outline: none;
+    box-shadow: 0 0 6px rgba(93, 77, 255, 0.3);
+}
+
+/* Donation list */
+.donation-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* Donation card */
+.donation-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px;
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #eee;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+    transition: 0.25s ease-in-out;
+}
+
+.donation-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.10);
+}
+
+/* Donation info block */
+.donation-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* Item title */
+.donation-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2b2b2b;
+}
+
+/* Category text */
+.donation-category {
+    font-size: 0.9rem;
+    color: #5d4dff;
+    font-weight: 500;
+}
+
+/* Time ago / date */
+.donation-time {
+    font-size: 0.85rem;
+    color: #7b7b7b;
+}
+
+/* Amount badge */
+.amount-badge {
+    padding: 8px 14px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: white;
+    background: linear-gradient(135deg, #5d4dff, #8b5cf6); /* blue-purple */
+}
+
+/* Empty state */
+.no-donations {
+    text-align: center;
+    padding: 30px 10px;
+    font-size: 1rem;
+    color: #777;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .donation-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .amount-badge {
+        align-self: flex-end;
+    }
+}
