@@ -423,3 +423,69 @@
 .btn-primary:hover {
   background-color: #4a3fd0;
 }
+.beneficiaries-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 20px;
+}
+
+.beneficiary-card {
+  background: #fff;
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: 0.2s ease;
+}
+
+.beneficiary-card:hover {
+  transform: translateY(-3px);
+}
+
+.beneficiary-card h3 {
+  margin-bottom: 8px;
+  font-size: 19px;
+  color: #333;
+}
+
+.contact-btn {
+  margin-top: 12px;
+  background: #0066cc;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.contact-btn:hover {
+  background: #0055b3;
+}
+
+.email-box {
+  background: #f3f4f6;
+  padding: 10px;
+  border-radius: 6px;
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.copy-btn {
+  background: #e5e7eb;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.copy-btn:hover {
+  background: #d1d5db;
+}
