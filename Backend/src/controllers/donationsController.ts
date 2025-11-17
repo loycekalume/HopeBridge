@@ -129,6 +129,37 @@ const donationsQuery = `
     });
 });
 
+export const getMyDonations = asyncHandler(async (req: UserRequest, res: Response) => {
+  if (!req.user || !req.user.user_id) {
+    return res.status(401).json({ message: "Not authorized." });
+  }
+
+  const donorId = req.user.user_id;
+
+  const donations = await pool.query(
+    `
+      SELECT 
+        donation_id,
+        item_name,
+        category,
+        created_at,
+        status,
+        photo_urls,
+        quantity,
+        location
+      FROM donations
+      WHERE donor_user_id = $1
+      ORDER BY created_at DESC
+    `,
+    [donorId]
+  );
+
+  res.status(200).json({
+    count: donations.rowCount,
+    donations: donations.rows,
+  });
+});
+
 
 export const updateDonation = asyncHandler(async (req: UserRequest, res: Response) => {
   if (!req.user || !req.user.user_id) {

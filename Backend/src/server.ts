@@ -29,7 +29,6 @@ app.use(cookieParser());
 // FIXED: Type-safe CORS setup
 const allowedOrigins: string[] = [
   'http://localhost:5173',
-  'http://localhost:3000',
   process.env.FRONTEND_URL || '',
 ].filter(Boolean); // remove empty strings
 
