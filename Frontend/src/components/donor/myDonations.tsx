@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { apiCall, API_BASE_URL } from "../../utils/api";
 import { useAuth } from "../../context/authContext";
 import Sidebar from "../../components/donor/sidebar";
+import DonationFormModal from "../../components/donor/donationForm";
+import type { DonationFormData } from "../../types/donationForm";
 import { formatDistanceToNow } from "date-fns";
 import "../../styles/donorDashboard.css";
 
@@ -13,16 +15,25 @@ const MyDonations: React.FC = () => {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
 
+  // Modal states
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
+  // Fetch donations
   useEffect(() => {
     const fetchDonations = async () => {
       try {
         const data = await apiCall(
-          `/api/donations/dashboard`,
+          `/api/donations/mydonations`,
           "GET",
           undefined,
           token ?? undefined
         );
-        setDonations(data);
+
+        setDonations(data.donations || []);
       } catch (err: any) {
         setError(err.message || "Failed to load donations");
       } finally {
@@ -33,6 +44,54 @@ const MyDonations: React.FC = () => {
     fetchDonations();
   }, [token]);
 
+  // Handle posting a new donation
+  const handleDonationSubmit = async (formData: DonationFormData) => {
+    setIsSubmitting(true);
+
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append("category", formData.category);
+      formDataToSend.append("title", formData.title);
+      formDataToSend.append("description", formData.description);
+      formDataToSend.append("condition", formData.condition);
+      formDataToSend.append("quantity", formData.quantity.toString());
+      formDataToSend.append("location", formData.location);
+      formDataToSend.append("availability", formData.availability);
+      formData.photos.forEach((file) => formDataToSend.append("photos", file));
+
+      const res = await fetch(`${API_BASE_URL}/api/donations`, {
+        method: "POST",
+        headers: { Authorization: token ? `Bearer ${token}` : "" },
+        body: formDataToSend,
+        credentials: "include",
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("Donation posted successfully!");
+        closeModal();
+
+        // Refresh list
+        const refetch = await apiCall(
+          `/api/donations/mydonations`,
+          "GET",
+          undefined,
+          token ?? undefined
+        );
+
+        setDonations(refetch.donations || []);
+      } else {
+        alert(data.message || "Failed to post donation.");
+      }
+    } catch (err) {
+      alert("Network error. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Filtering logic
   const filtered = donations.filter((d) => {
     const matchText = d.item_name?.toLowerCase().includes(search.toLowerCase());
     const matchCategory = categoryFilter ? d.category === categoryFilter : true;
@@ -44,9 +103,15 @@ const MyDonations: React.FC = () => {
       <Sidebar />
 
       <main className="mydonations-main">
-        <h1 className="page-title">My Donations</h1>
+        {/* Header row */}
+        <div className="page-header-row">
+          <h1 className="page-title">My Donations</h1>
+          <button className="btn-primary" onClick={openModal}>
+            + Post Donation
+          </button>
+        </div>
 
-        {/* Search + Filter */}
+        {/* Search + filters */}
         <div className="donation-filters">
           <input
             type="text"
@@ -91,7 +156,9 @@ const MyDonations: React.FC = () => {
             const imageUrl = donation.photo_urls?.[0]
               ? donation.photo_urls[0].startsWith("http")
                 ? donation.photo_urls[0]
-                : `${API_BASE_URL}${donation.photo_urls[0].startsWith("/") ? "" : "/"}${donation.photo_urls[0]}`
+                : `${API_BASE_URL}${
+                    donation.photo_urls[0].startsWith("/") ? "" : "/"
+                  }${donation.photo_urls[0]}`
               : "https://via.placeholder.com/150?text=Donation";
 
             return (
@@ -103,13 +170,24 @@ const MyDonations: React.FC = () => {
                   <p className="donation-category">Category: {donation.category}</p>
                   <p className="donation-status">Status: {donation.status}</p>
                   <p className="donation-date">
-                    Donated {formatDistanceToNow(new Date(donation.created_at), { addSuffix: true })}
+                    Donated{" "}
+                    {formatDistanceToNow(new Date(donation.created_at), {
+                      addSuffix: true,
+                    })}
                   </p>
                 </div>
               </div>
             );
           })}
         </div>
+
+        {/* Modal */}
+        <DonationFormModal
+          isOpen={isModalOpen}
+          onClose={closeModal}
+          onSubmit={handleDonationSubmit}
+          isSubmitting={isSubmitting}
+        />
       </main>
     </div>
   );
