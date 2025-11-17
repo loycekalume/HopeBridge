@@ -254,3 +254,32 @@ export const updateDonation = asyncHandler(async (req: UserRequest, res: Respons
     donation: result.rows[0],
   });
 });
+
+export const getBeneficiaries = asyncHandler(async (req: UserRequest, res: Response) => {
+  const query = `
+    SELECT 
+      u.user_id,
+      u.full_name,
+      u.email,
+      bp.primary_need,
+      bp.street_address,
+      bp.city,
+      bp.state_region
+    FROM users u
+    JOIN beneficiary_profiles bp ON u.user_id = bp.user_id
+    WHERE u.role = 'beneficiary'
+    ORDER BY u.created_at DESC;
+  `;
+
+  const result = await pool.query(query);
+
+  const beneficiaries = result.rows.map(b => ({
+    user_id: b.user_id,
+    full_name: b.full_name,
+    email: b.email,
+    primary_need: b.primary_need,
+    location: `${b.street_address}, ${b.city}, ${b.state_region}`
+  }));
+
+  res.status(200).json({ count: beneficiaries.length, beneficiaries });
+});
