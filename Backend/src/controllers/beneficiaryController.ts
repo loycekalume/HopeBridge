@@ -242,3 +242,73 @@ export const getAvailableDonations = asyncHandler(async (req: UserRequest, res: 
 
   res.status(200).json({ donations });
 });
+
+export const updateProfile = asyncHandler(async (req: Request, res: Response) => {
+  const userId = (req as any).user?.user_id; // extracted from auth middleware
+  const { full_name, phone, city } = req.body;
+
+  if (!userId) {
+    res.status(400).json({ message: "User not authenticated." });
+    return;
+  }
+
+  if (!full_name && !phone && !city) {
+    res.status(400).json({ message: "No fields provided for update." });
+    return;
+  }
+
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    // ---- 1) UPDATE USERS TABLE ----
+    const updateUserQuery = `
+      UPDATE users
+      SET 
+        full_name = COALESCE($1, full_name),
+        phone = COALESCE($2, phone),
+        updated_at = NOW()
+      WHERE user_id = $3;
+    `;
+
+    await client.query(updateUserQuery, [
+      full_name || null,
+      phone || null,
+      userId,
+    ]);
+
+    // ---- 2) UPDATE BENEFICIARY PROFILES TABLE ----
+    const updateProfileQuery = `
+      UPDATE beneficiary_profiles
+      SET 
+        city = COALESCE($1, city),
+        updated_at = NOW()
+      WHERE user_id = $2;
+    `;
+
+    await client.query(updateProfileQuery, [
+      city || null,
+      userId,
+    ]);
+
+    await client.query("COMMIT");
+
+    res.status(200).json({
+      message: "Profile updated successfully.",
+      updated_fields: {
+        full_name,
+        phone,
+        city,
+      },
+    });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Error updating beneficiary profile:", error);
+    res.status(500).json({
+      message: "Failed to update profile due to a server error.",
+    });
+  } finally {
+    client.release();
+  }
+});
