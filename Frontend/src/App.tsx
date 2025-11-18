@@ -10,7 +10,6 @@ import OrganizerDashboard from "./pages/dashboards/organizersDashboard";
 import CommunityDashboard from "./pages/dashboards/communityGroup";
 import CompanyDashboard from "./pages/dashboards/companyDashboard";
 import ProfileWizard from "./pages/routes/profileRoutes";
-import DonationsPage from "./pages/dashboards/donations";
 import PendingVerificationsPage from "./components/organizers/pendingVerifications";
 import ApprovedRequests from "./components/organizers/approvedRequests";
 import MatchedDonations from "./components/organizers/matchedDonations"; 
@@ -27,7 +26,8 @@ import CompanyImpacts from "./components/company/impact";
 import CompanyDonations from "./components/company/donations";
 import MyDonations from "./components/donor/myDonations";
 import DonorBeneficiaries  from "./components/donor/beneficiaries"
-// optional if you have this
+import RequestsPage from "./components/beneficiary/requests"
+import Donations from "./components/beneficiary/donations"
 
 function App() {
   return (
@@ -54,7 +54,9 @@ function App() {
              <Route path="/donor/beneficiaries" element={<DonorBeneficiaries />} />
 
           {/* Beneficiary pages */}
-          <Route path="/beneficiary/donations" element={<DonationsPage />} />
+          <Route path="/beneficiary/donations" element={<Donations />} />
+          <Route path="/beneficiary/requests" element={<RequestsPage />} />
+         
 
           {/* Organizer pages */}
           <Route path="/pending-verifications" element={<PendingVerificationsPage />} />
