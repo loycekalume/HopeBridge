@@ -7,20 +7,23 @@ import type { Request } from "../../types/beneficiary";
 import "../../styles/beneficiacyDashboard.css";
 
 const Requests: React.FC = () => {
-  
   const [showModal, setShowModal] = useState(false);
   const [requests, setRequests] = useState<Request[]>([]);
   const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem("token");
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   // Fetch requests
   const fetchRequests = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await apiCall("/api/beneficiaryProfile/requests", "GET", undefined, token || "");
-      const formatted = data.requests.map((r: any) => ({
+      const data = await apiCall(
+        "/api/beneficiaryProfile/requests",
+        "GET",
+        undefined,
+        token || ""
+      );
+      const formatted: Request[] = data.requests.map((r: any) => ({
         id: r.request_id,
         name: r.title,
         tag: r.category,
@@ -52,22 +55,21 @@ const Requests: React.FC = () => {
           </button>
         </header>
 
-       <section className="recent-requests">
-  <h2>Recent Requests</h2>
+        <section className="recent-requests">
+          <h2>Recent Requests</h2>
 
-  {loading ? (
-    <p>Loading requests...</p>
-  ) : requests.length > 0 ? (
-    <div className="recent-requests-grid">
-      {requests.map((request) => (
-        <MatchRequestCard key={request.id} data={request} />
-      ))}
-    </div>
-  ) : (
-    <p>No requests yet. Click "Request Help" to create one.</p>
-  )}
-</section>
-
+          {loading ? (
+            <p>Loading requests...</p>
+          ) : requests.length > 0 ? (
+            <div className="recent-requests-grid">
+              {requests.map((request) => (
+                <MatchRequestCard key={request.id} data={request} />
+              ))}
+            </div>
+          ) : (
+            <p>No requests yet. Click "Request Help" to create one.</p>
+          )}
+        </section>
 
         {showModal && (
           <RequestHelpModal
