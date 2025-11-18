@@ -15,31 +15,34 @@ const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar-logo"> HopeBridge</div>
+   <aside className="sidebard">
+  <div className="sidebar-top">
+    <div className="sidebar-logod">HopeBridge</div>
 
-      <div className="sidebar-links">
-        {links.map(({ to, icon, label }) => (
-          <Link
-            key={to}
-            to={to}
-            className={`sidebar-link ${location.pathname === to ? "active" : ""}`}
-          >
-            {icon}
-            <span>{label}</span>
-          </Link>
-        ))}
-      </div>
+    <div className="sidebar-linksd">
+      {links.map(({ to, icon, label }) => (
+        <Link
+          key={to}
+          to={to}
+          className={`sidebar-link ${location.pathname === to ? "active" : ""}`}
+        >
+          {icon}
+          <span>{label}</span>
+        </Link>
+      ))}
+    </div>
+  </div>
 
-      <div className="sidebar-footer">
-        <div className="user-info">
-          <small>{user?.full_name}</small>
-        </div>
-        <button className="logout-btn" onClick={logout}>
-          <LogOut size={16} /> Logout
-        </button>
-      </div>
-    </aside>
+  <div className="sidebar-footer">
+    <div className="user-info">
+      <small>{user?.full_name}</small>
+    </div>
+    <button className="logout-btn" onClick={logout}>
+      <LogOut size={16} /> Logout
+    </button>
+  </div>
+</aside>
+
   );
 };
 

@@ -28,7 +28,7 @@ const DonationItem: React.FC<{ item: Donation; onImageClick: (url: string) => vo
   const timeAgo = new Date(item.created_at).toLocaleDateString();
 
   return (
-    <div className="donation-card">
+    <div className="donation-cardd">
       <div className="donation-image" onClick={() => onImageClick(imageUrl)}>
         <img src={imageUrl} alt={item.item_name} />
       </div>
@@ -50,13 +50,19 @@ const DonationItem: React.FC<{ item: Donation; onImageClick: (url: string) => vo
 };
 
 const DonorDashboard: React.FC = () => {
-  const { user, token } = useAuth();
+  const { user: authUser, token } = useAuth();
+
+  // Option 2: cast user to include optional phone and city
+  const user = authUser as typeof authUser & { phone?: string; city?: string };
+
   const [dashboardData, setDashboardData] = useState<DashboardData>(initialData);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null); // now used
+  const [error, setError] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+ 
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -67,7 +73,7 @@ const DonorDashboard: React.FC = () => {
     if (!user) return;
 
     setLoading(true);
-    setError(null); // reset error
+    setError(null);
     try {
       const data: DashboardData = await apiCall(
         "/api/donations/dashboard",
@@ -75,7 +81,6 @@ const DonorDashboard: React.FC = () => {
         undefined,
         token ?? undefined
       );
-
       setDashboardData(data);
     } catch (err: any) {
       console.error("Dashboard fetch error:", err);
@@ -131,55 +136,90 @@ const DonorDashboard: React.FC = () => {
 
   const { stats, recentDonations } = dashboardData;
 
+  // --- Function to generate initials ---
+  const getInitials = (name: string) => {
+    if (!name) return "U";
+    return name
+      .split(" ")
+      .map((n: string) => n[0])
+      .join("")
+      .toUpperCase();
+  };
+
   return (
     <DashboardLayout title="Donor Dashboard">
-      <div className="donor-dashboard">
-        <div className="dashboard-header">
-          <h3>Hello, {user?.full_name || "Donor"} 👋</h3>
-          <p>Here’s an overview of your impact and donations.</p>
-          <button className="btn-primary" onClick={openModal}>
-            + Post Donation
-          </button>
-        </div>
-
-        {/* Show error if it exists */}
-        {error && <p className="error-message">{error}</p>}
-
-        {/* Stats Section */}
-        <div className="stats-grid">
-          <div className="stat-card">
-            <i className="fas fa-box"></i>
-            <h3>{stats.totalDonations}</h3>
-            <p>Total Donations</p>
+      <div className="donor-dashboard-right-layout">
+        <div className="dashboard-main-section">
+          <div className="dashboard-header">
+            <h3>Hello, {user?.full_name || "Donor"} 👋</h3>
+            <p>Here’s an overview of your impact and donations.</p>
+            <button className="btn-primary" onClick={openModal}>
+              + Post Donation
+            </button>
           </div>
-          <div className="stat-card">
-            <i className="fas fa-users"></i>
-            <h3>{stats.beneficiariesHelped}</h3>
-            <p>Beneficiaries Helped</p>
-          </div>
-          <div className="stat-card">
-            <i className="fas fa-chart-line"></i>
-            <h3>{stats.impactScore}</h3>
-            <p>Impact Score</p>
-          </div>
-        </div>
 
-        {/* Recent Donations */}
-        <div className="recent-section">
-          <h3>Recent Donations</h3>
-          {recentDonations.length > 0 ? (
-            <div className="donation-list">
-              {recentDonations.map((item) => (
-                <DonationItem
-                  key={item.donation_id}
-                  item={item}
-                  onImageClick={(url) => setPreviewImage(url)}
-                />
-              ))}
+          {/* Show error if it exists */}
+          {error && <p className="error-message">{error}</p>}
+
+          {/* Stats Section */}
+          <div className="stats-grid">
+            <div className="stat-card">
+              <i className="fas fa-box"></i>
+              <h3>{stats.totalDonations}</h3>
+              <p>Total Donations</p>
             </div>
-          ) : (
-            <p className="no-data">No donations yet. Start by posting your first one!</p>
-          )}
+            <div className="stat-card">
+              <i className="fas fa-users"></i>
+              <h3>{stats.beneficiariesHelped}</h3>
+              <p>Beneficiaries Helped</p>
+            </div>
+            <div className="stat-card">
+              <i className="fas fa-chart-line"></i>
+              <h3>{stats.impactScore}</h3>
+              <p>Impact Score</p>
+            </div>
+          </div>
+
+          {/* Recent Donations */}
+          <div className="recent-section">
+            <h3>Recent Donations</h3>
+            {recentDonations.length > 0 ? (
+              <div className="donation-list">
+                {recentDonations.map((item) => (
+                  <DonationItem
+                    key={item.donation_id}
+                    item={item}
+                    onImageClick={(url) => setPreviewImage(url)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="no-data">No donations yet. Start by posting your first one!</p>
+            )}
+          </div>
+        </div>
+
+        {/* Profile Card on the Right */}
+        <div className="profile-card-container">
+          <div className="profile-cardd">
+            <div className="profile-avatard">{getInitials(user.full_name)}</div>
+            <h3 className="profile-named">{user.full_name}</h3>
+
+            <div className="profile-detailsd">
+              <p><strong>Email:</strong> {user.email}</p>
+              <p><strong>Phone:</strong> {user.phone || "Not set"}</p>
+              <p><strong>City:</strong> {user.city || "Not set"}</p>
+            </div>
+
+            <button
+              className="edit-profile-btnd"
+             
+            >
+              Edit Profile
+            </button>
+
+          
+          </div>
         </div>
       </div>
 
