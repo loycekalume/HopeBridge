@@ -13,12 +13,13 @@ interface JwtPayload {
 }
 
 export const protect = asyncHandler(async (req: UserRequest, res: Response, next: NextFunction) => {
-  
-  let token =
-    req.cookies.access_token ||
-    (req.headers.authorization && req.headers.authorization.startsWith("Bearer")
-      ? req.headers.authorization.split(" ")[1]
-      : null);
+
+  let token = null;
+
+  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+    token = req.headers.authorization.split(" ")[1];
+  }
+
 
   // console.log("Incoming token:", token);
   // console.log("Cookies:", req.cookies);
