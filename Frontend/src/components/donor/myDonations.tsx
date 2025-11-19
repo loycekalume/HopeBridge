@@ -63,7 +63,7 @@ const MyDonations: React.FC = () => {
         method: "POST",
         headers: { Authorization: token ? `Bearer ${token}` : "" },
         body: formDataToSend,
-        credentials: "include",
+       
       });
 
       const data = await res.json();
