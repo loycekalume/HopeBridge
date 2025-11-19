@@ -7,6 +7,9 @@ import { UserRequest } from "../utils/types/userTypes";
 // @desc    Update Beneficiary Profile (Completes Registration)
 // @route   PUT /api/users/:userId/profile/beneficiary
 // @access  Private 
+
+import { matchRequest } from "../utils/match"; // we'll create this function
+
 export const createBeneficiaryRequest = asyncHandler(async (req: Request, res: Response) => {
   const beneficiaryId = (req as any).user?.user_id; // assuming auth middleware sets req.user
   const {
@@ -34,6 +37,7 @@ export const createBeneficiaryRequest = asyncHandler(async (req: Request, res: R
   try {
     await client.query("BEGIN");
 
+    // 1️⃣ Insert the beneficiary request
     const insertQuery = `
       INSERT INTO beneficiary_requests 
         (beneficiary_id, category, title, description, urgency_level, quantity, location, household_size, can_pickup, needs_delivery, flexible_condition)
@@ -56,11 +60,18 @@ export const createBeneficiaryRequest = asyncHandler(async (req: Request, res: R
       flexible_condition || false,
     ]);
 
+    const request = result.rows[0];
+
+    // 2️⃣ Run matching logic for this new request
+    // This will find a pending donation and auto-match if a good one exists
+    const matchedDonation = await matchRequest(request.request_id);
+
     await client.query("COMMIT");
 
     res.status(201).json({
       message: "Help request submitted successfully.",
-      request: result.rows[0],
+      request,
+      matchedDonation, // <-- contains donation info if matched
     });
   } catch (error) {
     await client.query("ROLLBACK");

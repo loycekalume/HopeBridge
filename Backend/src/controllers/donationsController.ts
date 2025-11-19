@@ -11,6 +11,8 @@ interface UserRequest extends Request {
 }
 
 //  POST a new donation with image upload
+import { matchDonation } from "../utils/match";
+
 export const postNewDonation = asyncHandler(async (req: UserRequest, res: Response) => {
   if (!req.user || !req.user.user_id) {
     res.status(401).json({ message: "Not authorized or user ID missing." });
@@ -19,10 +21,8 @@ export const postNewDonation = asyncHandler(async (req: UserRequest, res: Respon
 
   const donorUserId = req.user.user_id;
 
-  // Extract fields from form-data
   const { category, title, description, condition, quantity, location, availability } = req.body;
 
-  // Validate input
   if (!category || !title || !condition || !quantity || !location) {
     res.status(400).json({ message: "Missing required donation fields." });
     return;
@@ -34,7 +34,6 @@ export const postNewDonation = asyncHandler(async (req: UserRequest, res: Respon
     return;
   }
 
-  // ✅ Handle uploaded files
   let photoUrls: string[] = [];
   if (req.files && req.files.length > 0) {
     photoUrls = (req.files as Express.Multer.File[]).map(
@@ -42,11 +41,11 @@ export const postNewDonation = asyncHandler(async (req: UserRequest, res: Respon
     );
   }
 
-  // Insert donation into DB
+  // Insert donation
   const newDonation = await pool.query(
     `
       INSERT INTO donations (
-        donor_user_id, item_name, category, description, item_condition, 
+        donor_user_id, item_name, category, description, item_condition,
         quantity, location, availability, photo_urls, status
       )
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'Pending')
@@ -65,11 +64,18 @@ export const postNewDonation = asyncHandler(async (req: UserRequest, res: Respon
     ]
   );
 
+  const donationId = newDonation.rows[0].donation_id;
+
+  // 📌 RUN MATCHING LOGIC HERE
+  const matchedRequest = await matchDonation(donationId);
+
   res.status(201).json({
-    message: "Donation posted successfully with images!",
+    message: "Donation posted successfully!",
     donation: newDonation.rows[0],
+    matchedRequest, // <-- send matched beneficiary request to frontend
   });
 });
+
 
 export const getDonorDashboard = asyncHandler(async (req: UserRequest, res: Response) => {
     
@@ -93,7 +99,7 @@ export const getDonorDashboard = asyncHandler(async (req: UserRequest, res: Resp
     const statsResult = await pool.query(statsQuery, [userId]);
     const stats = statsResult.rows[0];
 
-    // 2. Fetch Recent Donations
+    
     // 2. Fetch Recent Donations
 const donationsQuery = `
     SELECT
@@ -136,29 +142,56 @@ export const getMyDonations = asyncHandler(async (req: UserRequest, res: Respons
 
   const donorId = req.user.user_id;
 
-  const donations = await pool.query(
+  // Fetch donations along with matched beneficiary info
+  const donationsResult = await pool.query(
     `
       SELECT 
-        donation_id,
-        item_name,
-        category,
-        created_at,
-        status,
-        photo_urls,
-        quantity,
-        location
-      FROM donations
-      WHERE donor_user_id = $1
-      ORDER BY created_at DESC
+        d.donation_id,
+        d.item_name,
+        d.category,
+        d.created_at,
+        d.status,
+        d.photo_urls,
+        d.quantity AS donation_quantity,
+        d.location AS donation_location,
+        u.full_name AS matched_name,
+        r.location AS matched_location,
+        r.quantity AS matched_quantity
+      FROM donations d
+      LEFT JOIN beneficiary_requests r ON d.matched_beneficiary_id = r.beneficiary_id AND d.matched_beneficiary_id IS NOT NULL
+      LEFT JOIN users u ON r.beneficiary_id = u.user_id
+      WHERE d.donor_user_id = $1
+      ORDER BY d.created_at DESC
     `,
     [donorId]
   );
 
+  // Calculate a match percentage for the frontend
+  const donations = donationsResult.rows.map((d) => {
+    let matchPercentage = null;
+    if (d.matched_name && d.matched_quantity) {
+      const quantityRatio = Math.min(d.donation_quantity / d.matched_quantity, 1);
+      // Example formula: quantity match + same location = approximate percentage
+      const locationMatch = d.donation_location === d.matched_city ? 1 : 0;
+      matchPercentage = Math.round((quantityRatio + locationMatch) / 2 * 100); // 0-100%
+    }
+
+    return {
+      ...d,
+      matched_to: d.matched_name || null,
+      matched_city: d.matched_city || null,
+      matched_quantity: d.matched_quantity || null,
+      match_percentage: matchPercentage,
+    };
+  });
+
   res.status(200).json({
-    count: donations.rowCount,
-    donations: donations.rows,
+    count: donations.length,
+    donations,
   });
 });
+
+
 
 
 export const updateDonation = asyncHandler(async (req: UserRequest, res: Response) => {
