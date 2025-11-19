@@ -22,14 +22,24 @@ const Beneficiaries: React.FC = () => {
 
   const [showEmail, setShowEmail] = useState<number | null>(null);
 
-  useEffect(() => {
-    const fetchBeneficiaries = async () => {
-      const res = await apiCall("/api/donations/donors/beneficiaries", "GET");
-      setBeneficiaries(res.beneficiaries);
-      setFiltered(res.beneficiaries);
-    };
-    fetchBeneficiaries();
-  }, []);
+ useEffect(() => {
+  const fetchBeneficiaries = async () => {
+    const token = localStorage.getItem("token"); // or however you store it
+
+    const res = await apiCall(
+      "/api/donations/donors/beneficiaries",
+      "GET",
+      undefined,
+      token ?? undefined
+    );
+
+    setBeneficiaries(res.beneficiaries);
+    setFiltered(res.beneficiaries);
+  };
+
+  fetchBeneficiaries();
+}, []);
+
 
   // Extract cities & needs for dropdowns
   const uniqueCities = [...new Set(beneficiaries.map(b => b.location.split(",")[1]?.trim()))];
