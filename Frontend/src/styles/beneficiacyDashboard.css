@@ -66,64 +66,214 @@
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 18px;
 }
-/* Recent Requests Section */
+/* ===== Requests Page Layout ===== */
+/* Requests Wrapper */
+.requests-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background: #f9fafb;
+}
+
+/* Main content area */
+.requests-main {
+  margin-left: 220px; /* sidebar width */
+  padding: 20px;
+  flex: 1;
+}
+
+/* Header */
+.requests-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.request-help-btn {
+  background-color: #162447;
+  color: #fff;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.request-help-btn:hover {
+  background-color: #1a1a2e;
+}
+
+/* Recent Requests Grid */
 .recent-requests {
-  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
-.recent-requests h2 {
-  font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-
-.recent-requests p {
-  font-size: 14px;
-  color: #555;
-  margin-bottom: 15px;
-}
-
-/* Grid layout for requests */
 .recent-requests-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 18px;
 }
 
-/* Individual MatchRequestCard styling (optional tweaks) */
-.match-request-cardb {
+/* Individual Card Styling */
+.request-item,
+.match-card {
   background: #fff;
   padding: 18px;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.match-request-cardb:hover {
+.request-item:hover,
+.match-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
-/* Status badges inside card */
-.match-request-status {
+/* Highlight matched requests */
+.match-card {
+  border-left: 4px solid #16a34a; /* green indicator */
+  background-color: #f0fdf4; /* subtle green background */
+}
+
+/* Request / Match metadata */
+.request-metadata,
+.match-section {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Category tag */
+.tag {
   display: inline-block;
   padding: 4px 10px;
   border-radius: 8px;
   font-size: 12px;
   font-weight: 500;
   color: white;
+  width: fit-content;
+}
+
+/* Default category color */
+.tag.default-tag {
+  background-color: #6b7280;
+}
+
+/* Example category colors (adjust as needed) */
+.tag.health-tag {
+  background-color: #16a34a;
+}
+.tag.education-tag {
+  background-color: #2563eb;
+}
+.tag.food-tag {
+  background-color: #f59e0b;
+}
+.tag.clothing-tag {
+  background-color: #f97316;
+}
+
+/* Time */
+.time-ago {
+  font-size: 12px;
+  color: #555;
+}
+
+/* Matched donation info */
+.match-section p {
+  margin: 3px 0;
+  font-size: 13px;
+}
+
+.not-matched {
+  color: #f59e0b; /* orange for unmatched */
+  font-weight: 500;
+}
+
+/* Donor info */
+.donor,
+.location,
+.percent-match {
+  font-size: 13px;
+  color: #374151;
+}
+
+/* Buttons */
+.accept-btn,
+.update-btn {
+  margin-top: 8px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.accept-btn {
+  background-color: #16a34a;
+  color: #fff;
+}
+
+.accept-btn:hover {
+  background-color: #13803d;
+}
+
+.update-btn {
+  background-color: #2563eb;
+  color: #fff;
+}
+
+.update-btn:hover {
+  background-color: #1d4ed8;
+}
+
+/* Status badges for unmatched requests */
+.status {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: white;
+}
+
+.status-pending {
+  background-color: #f59e0b; /* orange */
+}
+
+.status-rejected {
+  background-color: #dc2626; /* red */
 }
 
 .status-matched {
   background-color: #16a34a; /* green */
 }
 
-.status-pending {
-  background-color: #f59e0b; /* yellow */
-}
 
 .status-rejected {
-  background-color: #dc2626; /* red */
+  background-color: #dc2626;
+}
+
+.update-btn {
+  background-color: #e5e5e5;
+  color: #111827;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+.update-btn:hover {
+  background-color: #d4d4d8;
 }
 
 .sidebarb {
@@ -167,45 +317,7 @@
   background-color: #162447;
   color: #fff;
 }
-.requests-wrapper {
-  display: flex;
-  min-height: 100vh;
-}
 
-.requests-main {
-  margin-left: 220px; /* sidebar width */
-  padding: 20px;
-  flex: 1;
-}
-
-.requests-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.request-help-btn {
-  background-color: #162447;
-  color: #fff;
-  padding: 8px 14px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.request-help-btn:hover {
-  background-color: #1a1a2e;
-}
-
-.recent-requests {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
 /* Layout */
 .donations-wrapper {
   display: flex;

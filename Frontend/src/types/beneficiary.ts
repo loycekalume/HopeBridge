@@ -13,7 +13,7 @@ export interface Match {
   donor: string;
   initials: string;
   initialsColor: 'j' | 'c';
-  tag: 'Food' | 'Education';
+  category:string;
   matchPercent: number;
   distanceKm: number;
   timePosted: string;
@@ -21,15 +21,7 @@ export interface Match {
   status?: never; // Matches don't have a status property
 }
 
-export interface Request {
-  id: string;
-  name: string;
-  tag: 'Food' | 'Education';
-  timeAgo: string;
-  status: 'Matched' | 'Pending';
-  isMatch: false;
-  donor?: never; // Requests don't have a donor property
-}
+
 // types/beneficiaryProfile.ts
 
 export interface BeneficiaryProfileData {
@@ -46,4 +38,22 @@ export interface BeneficiaryProfileData {
   proof_of_need_url: string; // Required (e.g., medical statement, school enrollment)
 
 }
+
+export interface MatchedDonation {
+  donor: string;
+  quantity: number;
+  location: string;
+  matchPercent: string; // e.g. "75"
+}
+
+export interface Request {
+  id: number;
+  name: string;
+  tag: string;
+  timeAgo: string;
+  category:string;
+  status: string;
+  matchedDonation?: MatchedDonation | null;
+}
+
 export type CardData = Match | Request;

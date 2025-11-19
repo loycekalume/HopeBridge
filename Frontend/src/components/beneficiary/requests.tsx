@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { apiCall } from "../../utils/api";
 import Sidebar from "../../components/beneficiary/sidebar";
-import MatchRequestCard from "../../components/beneficiary/matchRequestCard";
+import RequestCard from "../../components/beneficiary/matchRequestCard";
 import RequestHelpModal from "../../components/beneficiary/requestModal";
+import { apiCall } from "../../utils/api";
 import type { Request } from "../../types/beneficiary";
 import "../../styles/beneficiacyDashboard.css";
 
@@ -13,45 +13,42 @@ const Requests: React.FC = () => {
 
   const token = localStorage.getItem("token");
 
-  // Fetch requests
- const fetchRequests = useCallback(async () => {
-  try {
-    setLoading(true);
-    const data = await apiCall(
-      "/api/beneficiaryProfile/requests",
-      "GET",
-      undefined,
-      token || ""
-    );
+  const fetchRequests = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await apiCall(
+        "/api/beneficiary/requests",
+        "GET",
+        undefined,
+        token || ""
+      );
 
-    const formatted: Request[] = data.requests.map((r: any) => ({
-      id: r.request_id,
-      name: r.title,
-      tag: r.category,
-      timeAgo: new Date(r.created_at).toLocaleDateString(),
-      status: r.status,
-      isMatch: r.status === "Matched",
-      matchedDonation: r.matchedDonation
-        ? {
-            donor: r.matchedDonation.donor_name, // donor who posted donation
-            quantity: r.matchedDonation.quantity,
-            location: r.matchedDonation.location,
-            matchPercent: Math.min(
-              (r.matchedDonation.quantity / r.quantity) * 100,
-              100
-            ).toFixed(0),
+      // Map backend response
+      const formatted: Request[] = data.requests.map((r: any) => ({
+        id: r.request_id,
+        name: r.title,
+        category: r.category, // ✅ use category
+        timeAgo: new Date(r.created_at).toLocaleDateString(),
+        status: r.status,
+        isMatch: !!r.matched_donation_id,
+        matchedDonation: r.matched_donation_id
+          ? {
+            donor: r.donor_name,
+            quantity: r.donation_quantity,
+            location: r.donor_location,
+            matchPercent: Math.min((r.donation_quantity / r.quantity) * 100, 100).toFixed(0),
           }
-        : null,
-    }));
+          : null,
+      }));
 
-    setRequests(formatted);
-  } catch (error: any) {
-    console.error("Failed to fetch requests:", error.message);
-  } finally {
-    setLoading(false);
-  }
-}, [token]);
 
+      setRequests(formatted);
+    } catch (error: any) {
+      console.error("Failed to fetch requests:", error.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
 
   useEffect(() => {
     fetchRequests();
@@ -77,7 +74,7 @@ const Requests: React.FC = () => {
           ) : requests.length > 0 ? (
             <div className="recent-requests-grid">
               {requests.map((request) => (
-                <MatchRequestCard key={request.id} data={request} />
+                <RequestCard key={request.id} data={request} />
               ))}
             </div>
           ) : (
