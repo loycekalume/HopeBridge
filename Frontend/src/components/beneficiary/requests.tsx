@@ -14,30 +14,44 @@ const Requests: React.FC = () => {
   const token = localStorage.getItem("token");
 
   // Fetch requests
-  const fetchRequests = useCallback(async () => {
-    try {
-      setLoading(true);
-      const data = await apiCall(
-        "/api/beneficiaryProfile/requests",
-        "GET",
-        undefined,
-        token || ""
-      );
-      const formatted: Request[] = data.requests.map((r: any) => ({
-        id: r.request_id,
-        name: r.title,
-        tag: r.category,
-        timeAgo: new Date(r.created_at).toLocaleDateString(),
-        status: r.status,
-        isMatch: r.status === "Matched",
-      }));
-      setRequests(formatted);
-    } catch (error: any) {
-      console.error("Failed to fetch requests:", error.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [token]);
+ const fetchRequests = useCallback(async () => {
+  try {
+    setLoading(true);
+    const data = await apiCall(
+      "/api/beneficiaryProfile/requests",
+      "GET",
+      undefined,
+      token || ""
+    );
+
+    const formatted: Request[] = data.requests.map((r: any) => ({
+      id: r.request_id,
+      name: r.title,
+      tag: r.category,
+      timeAgo: new Date(r.created_at).toLocaleDateString(),
+      status: r.status,
+      isMatch: r.status === "Matched",
+      matchedDonation: r.matchedDonation
+        ? {
+            donor: r.matchedDonation.donor_name, // donor who posted donation
+            quantity: r.matchedDonation.quantity,
+            location: r.matchedDonation.location,
+            matchPercent: Math.min(
+              (r.matchedDonation.quantity / r.quantity) * 100,
+              100
+            ).toFixed(0),
+          }
+        : null,
+    }));
+
+    setRequests(formatted);
+  } catch (error: any) {
+    console.error("Failed to fetch requests:", error.message);
+  } finally {
+    setLoading(false);
+  }
+}, [token]);
+
 
   useEffect(() => {
     fetchRequests();

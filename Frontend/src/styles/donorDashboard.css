@@ -41,6 +41,45 @@
   display: flex;
   gap: 30px;
 }
+.donation-match {
+  margin-top: 6px;
+  background: #eef7ff;
+  padding: 8px;
+  border-radius: 6px;
+}
+
+.match-text {
+  font-size: 0.9rem;
+  color: #0b5394;
+  font-weight: 500;
+}
+
+.match-name {
+  font-weight: 600;
+}
+
+.match-details-btn {
+  margin-top: 5px;
+  padding: 5px 10px;
+  background: #0b5394;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.match-details-btn:hover {
+  background: #073763;
+}
+
+.match-pending {
+  margin-top: 6px;
+  font-size: 0.9rem;
+  color: #999;
+  font-style: italic;
+}
+
 
 /* Main content takes 2/3 */
 .dashboard-main-section {

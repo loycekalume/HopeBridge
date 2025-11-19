@@ -156,9 +156,8 @@ const MyDonations: React.FC = () => {
             const imageUrl = donation.photo_urls?.[0]
               ? donation.photo_urls[0].startsWith("http")
                 ? donation.photo_urls[0]
-                : `${API_BASE_URL}${
-                    donation.photo_urls[0].startsWith("/") ? "" : "/"
-                  }${donation.photo_urls[0]}`
+                : `${API_BASE_URL}${donation.photo_urls[0].startsWith("/") ? "" : "/"
+                }${donation.photo_urls[0]}`
               : "https://via.placeholder.com/150?text=Donation";
 
             return (
@@ -169,12 +168,41 @@ const MyDonations: React.FC = () => {
                   <h3 className="donation-title">{donation.item_name}</h3>
                   <p className="donation-category">Category: {donation.category}</p>
                   <p className="donation-status">Status: {donation.status}</p>
+
+                  {/* Match Info */}
+                  {donation.matched_to ? (
+                    <div className="donation-match">
+                      <p className="match-text">
+                        Matched with: <span className="match-name">{donation.matched_to}</span>
+                      </p>
+                      <p className="match-details">
+                        City: {donation.matched_city} • Needs: {donation.matched_quantity} items
+                        {donation.match_percentage !== null && (
+                          <> • Match: {donation.match_percentage}%</>
+                        )}
+                      </p>
+                      <button
+                        className="match-details-btn"
+                        onClick={() =>
+                          alert(
+                            `Beneficiary: ${donation.matched_to}\nCity: ${donation.matched_location}\nNeeds: ${donation.matched_quantity}\nMatch: ${donation.match_percentage}%`
+                          )
+                        }
+                      >
+                        View Details
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="match-pending">Not matched yet</p>
+                  )}
+
                   <p className="donation-date">
                     Donated{" "}
                     {formatDistanceToNow(new Date(donation.created_at), {
                       addSuffix: true,
                     })}
                   </p>
+
                 </div>
               </div>
             );

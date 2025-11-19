@@ -3,7 +3,7 @@ import Sidebar from "../../components/beneficiary/sidebar";
 import "../../styles/beneficiacyDashboard.css";
 import { apiCall } from "../../utils/api";
 import { formatDistanceToNow } from "date-fns";
-import RequestHelpModal from "./requestButton";
+import RequestHelpModal from "./request";
 
 interface Donation {
   donation_id: number;
