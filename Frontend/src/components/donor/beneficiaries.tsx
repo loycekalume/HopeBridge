@@ -3,6 +3,7 @@ import DashboardLayout from "../../components/donor/dashboardLayout";
 import { apiCall } from "../../utils/api";
 import "../../styles/donorDashboard.css";
 import { Mail, Copy } from "lucide-react";
+import { useAuth } from "../../context/authContext";
 
 interface Beneficiary {
   user_id: number;
@@ -13,6 +14,7 @@ interface Beneficiary {
 }
 
 const Beneficiaries: React.FC = () => {
+  const { token } = useAuth(); 
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
   const [filtered, setFiltered] = useState<Beneficiary[]>([]);
 
@@ -22,24 +24,26 @@ const Beneficiaries: React.FC = () => {
 
   const [showEmail, setShowEmail] = useState<number | null>(null);
 
- useEffect(() => {
-  const fetchBeneficiaries = async () => {
-    const token = localStorage.getItem("token"); // or however you store it
+  useEffect(() => {
+    const fetchBeneficiaries = async () => {
+      if (!token) return; // wait until token exists
 
-    const res = await apiCall(
-      "/api/donations/donors/beneficiaries",
-      "GET",
-      undefined,
-      token ?? undefined
-    );
+      try {
+        const res = await apiCall(
+          "/api/donations/donors/beneficiaries",
+          "GET",
+          undefined,
+          token
+        );
+        setBeneficiaries(res.beneficiaries);
+        setFiltered(res.beneficiaries);
+      } catch (err: any) {
+        console.error("Failed to fetch beneficiaries:", err);
+      }
+    };
 
-    setBeneficiaries(res.beneficiaries);
-    setFiltered(res.beneficiaries);
-  };
-
-  fetchBeneficiaries();
-}, []);
-
+    fetchBeneficiaries();
+  }, [token]); //  Re-fetch when token changes
 
   // Extract cities & needs for dropdowns
   const uniqueCities = [...new Set(beneficiaries.map(b => b.location.split(",")[1]?.trim()))];
