@@ -23,29 +23,30 @@ const MyDonations: React.FC = () => {
   const closeModal = () => setIsModalOpen(false);
 
   // Fetch donations
+  const fetchDonations = async () => {
+    if (!token) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const data = await apiCall("/api/donations/mydonations", "GET", undefined, token);
+      setDonations(data.donations || []);
+    } catch (err: any) {
+      setError(err.message || "Failed to load donations");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchDonations = async () => {
-      try {
-        const data = await apiCall(
-          `/api/donations/mydonations`,
-          "GET",
-          undefined,
-          token ?? undefined
-        );
-
-        setDonations(data.donations || []);
-      } catch (err: any) {
-        setError(err.message || "Failed to load donations");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchDonations();
   }, [token]);
 
   // Handle posting a new donation
   const handleDonationSubmit = async (formData: DonationFormData) => {
+    if (!token) return;
+
     setIsSubmitting(true);
 
     try {
@@ -59,33 +60,17 @@ const MyDonations: React.FC = () => {
       formDataToSend.append("availability", formData.availability);
       formData.photos.forEach((file) => formDataToSend.append("photos", file));
 
-      const res = await fetch(`${API_BASE_URL}/api/donations`, {
-        method: "POST",
-        headers: { Authorization: token ? `Bearer ${token}` : "" },
-        body: formDataToSend,
-       
-      });
+      //  Use apiCall for consistent handling
+      const data = await apiCall("/api/donations", "POST", formDataToSend, token);
+      console.log(data)
 
-      const data = await res.json();
+      alert("Donation posted successfully!");
+      closeModal();
 
-      if (res.ok) {
-        alert("Donation posted successfully!");
-        closeModal();
-
-        // Refresh list
-        const refetch = await apiCall(
-          `/api/donations/mydonations`,
-          "GET",
-          undefined,
-          token ?? undefined
-        );
-
-        setDonations(refetch.donations || []);
-      } else {
-        alert(data.message || "Failed to post donation.");
-      }
-    } catch (err) {
-      alert("Network error. Please try again.");
+      // Refresh donations list
+      await fetchDonations();
+    } catch (err: any) {
+      alert(err.message || "Network error. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -152,16 +137,15 @@ const MyDonations: React.FC = () => {
         )}
 
         <div className="donation-grid">
-          {filtered.map((donation) => {
+          {filtered.map((donation, index) => {
             const imageUrl = donation.photo_urls?.[0]
               ? donation.photo_urls[0].startsWith("http")
                 ? donation.photo_urls[0]
-                : `${API_BASE_URL}${donation.photo_urls[0].startsWith("/") ? "" : "/"
-                }${donation.photo_urls[0]}`
+                : `${API_BASE_URL}${donation.photo_urls[0].startsWith("/") ? "" : "/"}${donation.photo_urls[0]}`
               : "https://via.placeholder.com/150?text=Donation";
 
             return (
-              <div key={donation.donation_id} className="donation-card">
+              <div key={`${donation.donation_id}-${index}`} className="donation-card">
                 <img src={imageUrl} className="donation-img" alt="Donation" />
 
                 <div className="donation-info">
@@ -202,12 +186,12 @@ const MyDonations: React.FC = () => {
                       addSuffix: true,
                     })}
                   </p>
-
                 </div>
               </div>
             );
           })}
         </div>
+
 
         {/* Modal */}
         <DonationFormModal

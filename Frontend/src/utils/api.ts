@@ -2,26 +2,30 @@
 export const API_BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:3000")
   .replace(/\/$/, "");
 
+// --- Refresh Access Token ---
 async function refreshAccessToken(): Promise<string | null> {
-  const res = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
-    method: "POST",
-    credentials: "include",
-  });
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+      method: "POST",
+      credentials: "include",
+    });
 
-  if (!res.ok) return null;
+    if (!res.ok) return null;
 
-  const data = await res.json();
-  return data.accessToken || null;
+    const data = await res.json();
+    return data.accessToken || null;
+  } catch {
+    return null;
+  }
 }
 
+// --- Main API Call ---
 export async function apiCall(
   endpoint: string,
   method: string = "GET",
   body?: any,
-  token?: string,                           // token may be undefined
-  updateToken?: (newToken: string) => void // optional callback to sync AuthContext
+  token?: string
 ) {
-  // Normalize token to string | null
   const normalizedToken: string | null = token ?? null;
 
   const makeRequest = async (accessToken: string | null) => {
@@ -36,10 +40,9 @@ export async function apiCall(
     });
   };
 
-  // 1) Initial request
   let res = await makeRequest(normalizedToken);
 
-  // 2) If expired token, try refreshing
+  // --- Handle 401 silently and retry ---
   if (res.status === 401) {
     const newToken = await refreshAccessToken();
 
@@ -47,17 +50,11 @@ export async function apiCall(
       throw new Error("Session expired. Please login again.");
     }
 
-    // Update localStorage
     localStorage.setItem("token", newToken);
-
-    // Update React state via optional callback
-    updateToken?.(newToken);
-
-    // Retry request with new token
     res = await makeRequest(newToken);
   }
 
-  // 3) Final validation
+  // --- Final validation ---
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
     throw new Error(error.message || "Something went wrong");
