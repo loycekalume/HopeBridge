@@ -276,13 +276,25 @@
   background-color: #d4d4d8;
 }
 
+/* Make sidebar a vertical flex container */
 .sidebarb {
   width: 220px;
- background-color: #131a2c;
+  background-color: #1d3557;
   color: #fff;
   min-height: 100vh;
   padding: 20px;
   position: fixed;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* pushes footer to bottom */
+}
+
+/* Make sidebar-top group its elements normally (logo + links together) */
+.sidebar-top {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* space between logo and links */
 }
 
 .sidebar-headerb h2 {
@@ -314,7 +326,7 @@
 
 .sidebar-navb a.active,
 .sidebar-navb a:hover {
-  background-color: #162447;
+  background-color: #457b9d;
   color: #fff;
 }
 
