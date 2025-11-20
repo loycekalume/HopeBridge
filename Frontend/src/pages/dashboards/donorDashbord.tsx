@@ -95,42 +95,36 @@ const DonorDashboard: React.FC = () => {
   }, [user?.user_id]);
 
   // --- Handle Donation Submission ---
-  const handleDonationSubmit = async (formData: DonationFormData) => {
-    setIsSubmitting(true);
-    try {
-      const formDataToSend = new FormData();
-      formDataToSend.append("category", formData.category);
-      formDataToSend.append("title", formData.title);
-      formDataToSend.append("description", formData.description);
-      formDataToSend.append("condition", formData.condition);
-      formDataToSend.append("quantity", formData.quantity.toString());
-      formDataToSend.append("location", formData.location);
-      formDataToSend.append("availability", formData.availability);
-      formData.photos.forEach((file) => formDataToSend.append("photos", file));
+const handleDonationSubmit = async (formData: DonationFormData) => {
+  setIsSubmitting(true);
 
-      const res = await fetch(`${API_BASE_URL}/api/donations`, {
-        method: "POST",
-        headers: { Authorization: token ? `Bearer ${token}` : "" },
-        body: formDataToSend,
-        credentials: "include",
-      });
+  try {
+    const formDataToSend = new FormData();
+    formDataToSend.append("category", formData.category);
+    formDataToSend.append("title", formData.title);
+    formDataToSend.append("description", formData.description);
+    formDataToSend.append("condition", formData.condition);
+    formDataToSend.append("quantity", formData.quantity.toString());
+    formDataToSend.append("location", formData.location);
+    formDataToSend.append("availability", formData.availability);
+    formData.photos.forEach((file) => formDataToSend.append("photos", file));
 
-      const data = await res.json();
+    //  Use apiCall helper that already handles token refresh
+    const data = await apiCall("/api/donations", "POST", formDataToSend, token ?? undefined);
+    console.log(data)
 
-      if (res.ok) {
-        alert("Donation posted successfully!");
-        await fetchDashboardData();
-        closeModal();
-      } else {
-        alert(`Failed: ${data.message || "Server error"}`);
-      }
-    } catch (err) {
-      console.error("Donation submission error:", err);
-      alert("Network error. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    alert("Donation posted successfully!");
+    await fetchDashboardData(); // refresh dashboard
+    closeModal();
+  } catch (err: any) {
+    console.error("Donation submission error:", err);
+    alert(err.message || "Network error. Please try again.");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+
 
   if (loading) return <div className="loading-screen">Loading...</div>;
 

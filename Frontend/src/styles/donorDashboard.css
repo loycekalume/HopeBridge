@@ -90,9 +90,8 @@
 }
 /* Profile card container */
 .profile-card-container {
-  width: 280px; /* fixed width for card */
+  width: 280px; 
   position: sticky;
-  top: 20px; /* space from top */
   height: calc(100vh - 40px); /* match sidebar height minus top spacing */
   align-self: flex-start; /* prevent stretching */
 }

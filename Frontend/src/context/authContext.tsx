@@ -14,25 +14,25 @@ interface AuthUser {
 interface AuthContextType {
   user: AuthUser | null;
   token: string | null;
-  loading: boolean; // <-- Add this
+  loading: boolean;
   login: (accessToken: string, userData: AuthUser) => void;
   logout: () => void;
+  updateToken: (newToken: string) => void;   // <-- Add this
 }
 
 interface AuthProviderProps {
   children: ReactNode;
 }
 
-// --- Context Creation ---
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // --- Provider ---
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true); // <-- Tracks restore state
+  const [loading, setLoading] = useState(true);
 
-  // --- Restore session from localStorage on mount ---
+  // Restore session
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     const storedToken = localStorage.getItem('token');
@@ -41,13 +41,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         setUser(JSON.parse(storedUser));
         setToken(storedToken);
-      } catch (err) {
-        console.error('Failed to parse stored auth data', err);
+      } catch {
         localStorage.removeItem('user');
         localStorage.removeItem('token');
       }
     }
-    setLoading(false); // Mark initialization complete
+
+    setLoading(false);
   }, []);
 
   // --- Login ---
@@ -55,9 +55,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setToken(accessToken);
     setUser(userData);
 
-    // Persist to localStorage
     localStorage.setItem('token', accessToken);
     localStorage.setItem('user', JSON.stringify(userData));
+  };
+
+  // --- Refresh/Update Token (from refresh API) ---
+  const updateToken = (newToken: string) => {
+    setToken(newToken);
+    localStorage.setItem('token', newToken);
   };
 
   // --- Logout ---
@@ -70,17 +75,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout }}>
+    <AuthContext.Provider 
+      value={{ user, token, loading, login, logout, updateToken }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
-// --- Hook ---
+// Hook
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };
