@@ -57,47 +57,94 @@ body {
 }
 
 
-/* Sidebar */
 .sidebar3 {
-  background-color: #1a1a40;
-  color: white;
+  width: 240px;
+  background: #1d3557;
+  color: #f8f9fa;
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  
+  position: fixed;
+  left: 0;
+  top: 0;
   padding: 20px;
 }
 
-.sidebar3 .logo {
+/* Top Logo section */
+.logo {
   text-align: center;
+  margin-bottom: 20px;
 }
 
-.sidebar3 .logo img {
-  width: 60px;
+.logo img {
+  width: 55px;
+  margin-bottom: 8px;
 }
 
-.sidebar3 .menu {
-  margin-top: 30px;
-  width: 100%;
+.logo h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
 }
 
-.sidebar3 .menu a {
-  display: block;
-  padding: 12px 15px;
-  color: white;
+/* Middle Menu */
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 200px;
+}
+
+.menu a {
   text-decoration: none;
-  border-radius: 6px;
-  margin: 5px 0;
-  transition: background 0.3s;
+  color: #d6d6d6;
+  padding: 10px 14px;
+  border-radius: 8px;
+  transition: 0.3s ease;
 }
 
-.sidebar3 .menu a:hover,
-.sidebar3 .menu a.active {
-  background-color: #4caf50;
+.menu a:hover {
+  background: #457b9d;
+  color: #fff;
 }
+
+.menu a.active {
+  background: #457b9d;
+  color: #fff;
+}
+
+/* Footer */
+.sidebar-footer3 {
+  border-top: 1px solid #2c2f36;
+  padding-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.logout-btn3 {
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: 0.3s ease;
+}
+
+.logout-btn3:hover {
+  background: #c0392b;
+}
+
 
 /* Main content */
 .main-content3 {
   padding: 30px;
+  margin-left: 240px;
 }
 
 .overview3 {
