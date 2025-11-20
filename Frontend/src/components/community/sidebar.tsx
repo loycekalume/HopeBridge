@@ -2,12 +2,19 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import "../../styles/communityGroups.css";
-import { LogOut } from "lucide-react";
+import { LayoutDashboard, CalendarCheck, BarChart2, Users, LogOut } from "lucide-react";
 import { useAuth } from "../../context/authContext";
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
   const { user, logout } = useAuth();
+
+  const links = [
+    { to: "/community", label: "Dashboard Overview", icon: <LayoutDashboard size={18} /> },
+    { to: "/manage-events", label: "Manage Events", icon: <CalendarCheck size={18} /> },
+    { to: "/impact-reports", label: "Impact Reports", icon: <BarChart2 size={18} /> },
+    { to: "/members", label: "Community Members", icon: <Users size={18} /> },
+  ];
 
   return (
     <aside className="sidebar3">
@@ -16,43 +23,25 @@ const Sidebar: React.FC = () => {
         <h2>HopeBridge</h2>
       </div>
 
-      {/* CENTER: Navigation */}
+      {/* NAVIGATION */}
       <nav className="menu">
-        <Link
-          to="/community"
-          className={location.pathname === "/community" ? "active" : ""}
-        >
-          Dashboard Overview
-        </Link>
-
-        <Link
-          to="/manage-events"
-          className={location.pathname === "/manage-events" ? "active" : ""}
-        >
-          Manage Events
-        </Link>
-
-        <Link
-          to="/impact-reports"
-          className={location.pathname === "/impact-reports" ? "active" : ""}
-        >
-          Impact Reports
-        </Link>
-
-        <Link
-          to="/members"
-          className={location.pathname === "/members" ? "active" : ""}
-        >
-          Community Members
-        </Link>
+        {links.map(({ to, label, icon }) => (
+          <Link
+            key={to}
+            to={to}
+            className={location.pathname === to ? "active" : ""}
+          >
+            {icon}
+            <span>{label}</span>
+          </Link>
+        ))}
       </nav>
 
-      {/* BOTTOM FOOTER */}
+      {/* FOOTER */}
       <div className="sidebar-footer3">
         <div className="user-info">
           <small>{user?.full_name}</small>
         </div>
-
         <button className="logout-btn3" onClick={logout}>
           <LogOut size={16} /> Logout
         </button>
