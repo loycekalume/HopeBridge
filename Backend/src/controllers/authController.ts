@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import pool from "../db/db.config";
+import jwt from "jsonwebtoken";
 import asyncHandler from "../middlewares/asyncHandler";
-import { generateToken } from "../utils/helpers/generateToken";
+import { generateAccessTokenOnly, generateToken } from "../utils/helpers/generateToken";
 import { UserRequest } from "../utils/types/userTypes";
 
 // @desc    Register new user
@@ -120,7 +121,43 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+export const refreshAccessToken = asyncHandler(async (req, res) => {
+  const refreshToken = req.cookies.refresh_token;
 
+  if (!refreshToken) {
+    return res.status(401).json({ message: "No refresh token provided" });
+  }
+
+  try {
+    const decoded = jwt.verify(
+      refreshToken,
+      process.env.REFRESH_TOKEN_SECRET!
+    ) as jwt.JwtPayload;
+
+    const userId = decoded.userId;
+
+    const result = await pool.query(
+      "SELECT user_id, role FROM users WHERE user_id = $1",
+      [userId]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(401).json({ message: "User not found" });
+    }
+
+    const user = result.rows[0];
+
+    const newAccessToken = generateAccessTokenOnly(
+      user.user_id.toString(),
+      user.role
+    );
+
+    // Send back the new access token
+    return res.json({ accessToken: newAccessToken });
+  } catch (err) {
+    return res.status(401).json({ message: "Invalid or expired refresh token" });
+  }
+});
 // @desc    Get logged in user profile
 // @route   GET /api/auth/profile
 // @access  Private

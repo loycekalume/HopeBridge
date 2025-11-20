@@ -45,3 +45,12 @@ export const generateToken = (res:Response, userId: string, role: string) => {
     }
 }
 
+export const generateAccessTokenOnly = (userId: string, role: string) => {
+  const jwtSecret = process.env.JWT_SECRET;
+
+  if (!jwtSecret) {
+    throw new Error("JWT_SECRET is missing");
+  }
+
+  return jwt.sign({ userId, role }, jwtSecret, { expiresIn: "15m" });
+};
