@@ -72,33 +72,69 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, profile }) 
   return (
     <div className="dashboard-container2">
       {/* ==== SIDEBAR ==== */}
-      <aside className="sidebar2">
-        <div className="logo2">
-          <Heart color="#00b4d8" size={35} />
-          <h2>HopeBridge</h2>
-        </div>
+      {/* ==== SIDEBAR ==== */}
+<aside className="sidebar2">
+  {/* TOP LOGO */}
+  <div className="logo2">
+    <Heart size={30} color="#00b4d8" />
+    <h2>HopeBridge</h2>
+  </div>
 
-        <nav className="menu2">
-          <Link to="/organizer" className={isActive("/organizerDashboard") ? "active" : ""}>
-            Dashboard Overview
-          </Link>
-          <Link to="/pending-verifications" className={isActive("/pending-verifications") ? "active" : ""}>
-            Pending Verifications
-          </Link>
-          <Link to="/approvedRequests" className={isActive("/approvedRequests") ? "active" : ""}>
-            Approved Requests
-          </Link>
-          <Link to="/matched-donations" className={isActive("/matched-donations") ? "active" : ""}>
-            Matched Donations
-          </Link>
-          <Link to="/community-events" className={isActive("/community-events") ? "active" : ""}>
-            Community Events
-          </Link>
-          <a href="#" className="logout" onClick={handleLogout}>
-            Logout
-          </a>
-        </nav>
-      </aside>
+  {/* NAVIGATION */}
+  <nav className="menu2">
+    <Link
+      to="/organizer"
+      className={isActive("/organizer") ? "active" : ""}
+    >
+      <span className="icon"><i className="fas fa-chart-line"></i></span>
+      Dashboard Overview
+    </Link>
+
+    <Link
+      to="/pending-verifications"
+      className={isActive("/pending-verifications") ? "active" : ""}
+    >
+      <span className="icon"><i className="fas fa-user-check"></i></span>
+      Pending Verifications
+    </Link>
+
+    <Link
+      to="/approvedRequests"
+      className={isActive("/approvedRequests") ? "active" : ""}
+    >
+      <span className="icon"><i className="fas fa-check-circle"></i></span>
+      Approved Requests
+    </Link>
+
+    <Link
+      to="/matched-donations"
+      className={isActive("/matched-donations") ? "active" : ""}
+    >
+      <span className="icon"><i className="fas fa-handshake"></i></span>
+      Matched Donations
+    </Link>
+
+    <Link
+      to="/community-events"
+      className={isActive("/community-events") ? "active" : ""}
+    >
+      <span className="icon"><i className="fas fa-calendar-alt"></i></span>
+      Community Events
+    </Link>
+  </nav>
+
+  {/* FOOTER FIXED TO BOTTOM */}
+  <div className="sidebar-footer2">
+    <div className="user-info2">
+      <small>{profileState?.full_name}</small>
+    </div>
+
+    <button className="logout-btn2" onClick={handleLogout}>
+      <i className="fas fa-sign-out-alt"></i> Logout
+    </button>
+  </div>
+</aside>
+
 
       {/* ==== MAIN CONTENT ==== */}
       <main className="main-content2">{children}</main>
