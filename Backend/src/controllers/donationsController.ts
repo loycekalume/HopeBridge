@@ -146,22 +146,32 @@ export const getMyDonations = asyncHandler(async (req: UserRequest, res: Respons
   const donationsResult = await pool.query(
     `
       SELECT 
-        d.donation_id,
-        d.item_name,
-        d.category,
-        d.created_at,
-        d.status,
-        d.photo_urls,
-        d.quantity AS donation_quantity,
-        d.location AS donation_location,
-        u.full_name AS matched_name,
-        r.location AS matched_location,
-        r.quantity AS matched_quantity
-      FROM donations d
-      LEFT JOIN beneficiary_requests r ON d.matched_beneficiary_id = r.beneficiary_id AND d.matched_beneficiary_id IS NOT NULL
-      LEFT JOIN users u ON r.beneficiary_id = u.user_id
-      WHERE d.donor_user_id = $1
-      ORDER BY d.created_at DESC
+  d.donation_id,
+  d.item_name,
+  d.category,
+  d.created_at,
+  d.status,
+  d.photo_urls,
+  d.quantity AS donation_quantity,
+  d.location AS donation_location,
+
+  -- Beneficiary info
+  u.full_name AS matched_name,
+  u.email AS matched_email,
+  u.phone AS matched_phone,
+
+  r.location AS matched_city,
+  r.quantity AS matched_quantity
+
+FROM donations d
+LEFT JOIN beneficiary_requests r 
+  ON d.matched_beneficiary_id = r.beneficiary_id
+LEFT JOIN users u 
+  ON r.beneficiary_id = u.user_id
+
+WHERE d.donor_user_id = $1
+ORDER BY d.created_at DESC
+
     `,
     [donorId]
   );
@@ -181,6 +191,8 @@ export const getMyDonations = asyncHandler(async (req: UserRequest, res: Respons
       matched_to: d.matched_name || null,
       matched_city: d.matched_city || null,
       matched_quantity: d.matched_quantity || null,
+      matched_email: d.matched_email || null,
+      matched_phone: d.matched_phone || null,
       match_percentage: matchPercentage,
     };
   });
