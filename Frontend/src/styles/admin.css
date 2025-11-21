@@ -39,12 +39,12 @@
 /* Sidebar */
 .admin-sidebar {
     width: 240px;
-    background: #1e293b;
+    background: #1d3557;
     color: #fff;
     height: 100vh;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+   
     padding: 20px 0;
     position: fixed;
     left: 0;
@@ -348,17 +348,19 @@
     color: #cbd5e1;
     text-decoration: none;
     transition: 0.2s ease;
+   
 }
 
 .menu-item:hover,
 .menu-item.active {
-    background: #334155;
+    background: #457b9d;
     color: #fff;
 }
 
 /* Logout */
 .logout-section {
     padding: 0 15px;
+    margin-top: 200px;
 }
 
 .logout-btn {
