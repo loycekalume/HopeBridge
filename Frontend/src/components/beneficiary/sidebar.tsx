@@ -30,8 +30,8 @@ const Sidebar: React.FC<SidebarProps> = ({ userRole }) => {
     } finally {
       // Clear frontend auth context
       logout();
-      // Redirect to home page
-      navigate("/");
+     
+      navigate("/login");
     }
   };
 

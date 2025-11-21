@@ -1,12 +1,12 @@
-// src/components/community/Sidebar.tsx
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../../styles/communityGroups.css";
 import { LayoutDashboard, CalendarCheck, BarChart2, Users, LogOut } from "lucide-react";
 import { useAuth } from "../../context/authContext";
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate(); // <-- Add this
   const { user, logout } = useAuth();
 
   const links = [
@@ -15,6 +15,11 @@ const Sidebar: React.FC = () => {
     { to: "/impact-reports", label: "Impact Reports", icon: <BarChart2 size={18} /> },
     { to: "/members", label: "Community Members", icon: <Users size={18} /> },
   ];
+
+  const handleLogout = () => {
+    logout();           // clear user & token
+    navigate("/login"); // redirect to login page
+  };
 
   return (
     <aside className="sidebar3">
@@ -42,7 +47,7 @@ const Sidebar: React.FC = () => {
         <div className="user-info">
           <small>{user?.full_name}</small>
         </div>
-        <button className="logout-btn3" onClick={logout}>
+        <button className="logout-btn3" onClick={handleLogout}>
           <LogOut size={16} /> Logout
         </button>
       </div>

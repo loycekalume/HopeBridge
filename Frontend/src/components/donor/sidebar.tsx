@@ -16,8 +16,8 @@ const Sidebar: React.FC = () => {
   ];
 
   const handleLogout = () => {
-    logout();          // clear token & user from context & localStorage
-    navigate("/"); // redirect to login/home page
+    logout();          
+    navigate("/login"); 
   };
 
   return (
