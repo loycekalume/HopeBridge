@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { apiCall } from '../utils/api';
 
 // --- Types ---
 interface AuthUser {
@@ -66,13 +67,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   // --- Logout ---
-  const logout = () => {
-    setToken(null);
-    setUser(null);
+  const logout = async () => {
+  try {
+    // Call backend to clear refresh token cookie
+    await apiCall("/api/auth/logout", "POST", null, token ?? undefined);
 
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-  };
+  } catch (error) {
+    console.error("Logout error:", error);
+  }
+
+  // Clear frontend session
+  setToken(null);
+  setUser(null);
+
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+};
 
   return (
     <AuthContext.Provider 
