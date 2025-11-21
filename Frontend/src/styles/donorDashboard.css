@@ -462,6 +462,53 @@
   gap: 20px;
   margin-top: 20px;
 }
+.contact-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1200;
+}
+
+.contact-modal {
+  background: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  width: 350px;
+  text-align: center;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.contact-info p {
+  margin: 10px 0 5px;
+}
+
+
+
+.whatsapp-btn {
+  display: block;
+  background: #25D366;
+  color: #fff;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+.close-modal-btn {
+  background: #d33;
+  color: white;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
 /* CARD DESIGN */
 .donation-card {

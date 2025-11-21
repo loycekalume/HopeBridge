@@ -3,7 +3,7 @@ import "../../styles/donorDashboard.css";
 import { useAuth } from "../../context/authContext";
 import DonationFormModal from "../../components/donor/donationForm";
 import DashboardLayout from "../../components/donor/dashboardLayout";
-import { apiCall, API_BASE_URL } from "../../utils/api"; 
+import { apiCall, API_BASE_URL } from "../../utils/api";
 import type { DonationFormData } from "../../types/donationForm";
 import type { DashboardData, Donation } from "../../types/donor";
 
@@ -13,10 +13,12 @@ const initialData: DashboardData = {
 };
 
 // --- Single Donation Card ---
-const DonationItem: React.FC<{ item: Donation; onImageClick: (url: string) => void }> = ({
-  item,
-  onImageClick,
-}) => {
+const DonationItem: React.FC<{
+  item: Donation;
+  onImageClick: (url: string) => void;
+  onContact: (donation: Donation) => void;     // <-- Added
+}> = ({ item, onImageClick, onContact }) => {
+
   const imageUrl = item.photo_urls?.[0]
     ? item.photo_urls[0].startsWith("http")
       ? item.photo_urls[0]
@@ -43,7 +45,19 @@ const DonationItem: React.FC<{ item: Donation; onImageClick: (url: string) => vo
 
       <div className="donation-actions">
         <span className={`status ${statusClass}`}>{item.status}</span>
-        <button className="btn-details">View</button>
+
+        {item.matched_to ? (
+          <button
+            className="btn-details"
+            onClick={() => onContact(item)}     // <-- Works now
+          >
+            Contact
+          </button>
+        ) : (
+          <button className="btn-disabled" disabled>
+            Awaiting Match
+          </button>
+        )}
       </div>
     </div>
   );
@@ -51,8 +65,6 @@ const DonationItem: React.FC<{ item: Donation; onImageClick: (url: string) => vo
 
 const DonorDashboard: React.FC = () => {
   const { user: authUser, token } = useAuth();
-
-  // Option 2: cast user to include optional phone and city
   const user = authUser as typeof authUser & { phone?: string; city?: string };
 
   const [dashboardData, setDashboardData] = useState<DashboardData>(initialData);
@@ -62,13 +74,25 @@ const DonorDashboard: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
- 
+  // Contact modal states
+  const [contactModalOpen, setContactModalOpen] = useState(false);
+  const [selectedContact, setSelectedContact] = useState<Donation | null>(null);
+
+  const openContactModal = (donation: Donation) => {
+    setSelectedContact(donation);
+    setContactModalOpen(true);
+  };
+
+  const closeContactModal = () => {
+    setSelectedContact(null);
+    setContactModalOpen(false);
+  };
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
   const closePreview = () => setPreviewImage(null);
 
-  // --- Fetch Dashboard Data ---
+  // Fetch Dashboard Data
   const fetchDashboardData = async () => {
     if (!user) return;
 
@@ -83,8 +107,7 @@ const DonorDashboard: React.FC = () => {
       );
       setDashboardData(data);
     } catch (err: any) {
-      console.error("Dashboard fetch error:", err);
-      setError(err.message || "Failed to load dashboard. Please check your backend server.");
+      setError(err.message || "Failed to load dashboard.");
     } finally {
       setLoading(false);
     }
@@ -94,51 +117,43 @@ const DonorDashboard: React.FC = () => {
     fetchDashboardData();
   }, [user?.user_id]);
 
-  // --- Handle Donation Submission ---
-const handleDonationSubmit = async (formData: DonationFormData) => {
-  setIsSubmitting(true);
+  // Handle Donation Submission
+  const handleDonationSubmit = async (formData: DonationFormData) => {
+    setIsSubmitting(true);
 
-  try {
-    const formDataToSend = new FormData();
-    formDataToSend.append("category", formData.category);
-    formDataToSend.append("title", formData.title);
-    formDataToSend.append("description", formData.description);
-    formDataToSend.append("condition", formData.condition);
-    formDataToSend.append("quantity", formData.quantity.toString());
-    formDataToSend.append("location", formData.location);
-    formDataToSend.append("availability", formData.availability);
-    formData.photos.forEach((file) => formDataToSend.append("photos", file));
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append("category", formData.category);
+      formDataToSend.append("title", formData.title);
+      formDataToSend.append("description", formData.description);
+      formDataToSend.append("condition", formData.condition);
+      formDataToSend.append("quantity", formData.quantity.toString());
+      formDataToSend.append("location", formData.location);
+      formDataToSend.append("availability", formData.availability);
+      formData.photos.forEach((file) => formDataToSend.append("photos", file));
 
-    //  Use apiCall helper that already handles token refresh
-    const data = await apiCall("/api/donations", "POST", formDataToSend, token ?? undefined);
-    console.log(data)
+      await apiCall("/api/donations", "POST", formDataToSend, token ?? undefined);
 
-    alert("Donation posted successfully!");
-    await fetchDashboardData(); // refresh dashboard
-    closeModal();
-  } catch (err: any) {
-    console.error("Donation submission error:", err);
-    alert(err.message || "Network error. Please try again.");
-  } finally {
-    setIsSubmitting(false);
-  }
-};
-
-
+      alert("Donation posted successfully!");
+      await fetchDashboardData();
+      closeModal();
+    } catch (err: any) {
+      alert(err.message || "Network error. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (loading) return <div className="loading-screen">Loading...</div>;
 
   const { stats, recentDonations } = dashboardData;
 
-  // --- Function to generate initials ---
-  const getInitials = (name: string) => {
-    if (!name) return "U";
-    return name
-      .split(" ")
-      .map((n: string) => n[0])
+  const getInitials = (name: string) =>
+    name
+      ?.split(" ")
+      .map((n) => n[0])
       .join("")
-      .toUpperCase();
-  };
+      .toUpperCase() || "U";
 
   return (
     <DashboardLayout title="Donor Dashboard">
@@ -152,10 +167,9 @@ const handleDonationSubmit = async (formData: DonationFormData) => {
             </button>
           </div>
 
-          {/* Show error if it exists */}
           {error && <p className="error-message">{error}</p>}
 
-          {/* Stats Section */}
+          {/* Stats */}
           <div className="stats-grid">
             <div className="stat-card">
               <i className="fas fa-box"></i>
@@ -184,6 +198,7 @@ const handleDonationSubmit = async (formData: DonationFormData) => {
                     key={item.donation_id}
                     item={item}
                     onImageClick={(url) => setPreviewImage(url)}
+                    onContact={openContactModal}    // <-- FIXED
                   />
                 ))}
               </div>
@@ -193,7 +208,7 @@ const handleDonationSubmit = async (formData: DonationFormData) => {
           </div>
         </div>
 
-        {/* Profile Card on the Right */}
+        {/* Profile Card */}
         <div className="profile-card-container">
           <div className="profile-cardd">
             <div className="profile-avatard">{getInitials(user.full_name)}</div>
@@ -205,18 +220,12 @@ const handleDonationSubmit = async (formData: DonationFormData) => {
               <p><strong>City:</strong> {user.city || "Not set"}</p>
             </div>
 
-            <button
-              className="edit-profile-btnd"
-             
-            >
-              Edit Profile
-            </button>
-
-          
+            <button className="edit-profile-btnd">Edit Profile</button>
           </div>
         </div>
       </div>
 
+      {/* Donation Form Modal */}
       <DonationFormModal
         isOpen={isModalOpen}
         onClose={closeModal}
@@ -224,13 +233,36 @@ const handleDonationSubmit = async (formData: DonationFormData) => {
         isSubmitting={isSubmitting}
       />
 
+      {/* Image Preview Modal */}
       {previewImage && (
         <div className="image-preview-modal" onClick={closePreview}>
           <div className="preview-content" onClick={(e) => e.stopPropagation()}>
             <img src={previewImage} alt="Donation Preview" />
-            <button className="close-preview" onClick={closePreview}>
-              ✖
-            </button>
+            <button className="close-preview" onClick={closePreview}>✖</button>
+          </div>
+        </div>
+      )}
+
+      {/* Contact Modal */}
+      {contactModalOpen && selectedContact && (
+        <div className="contact-modal-overlay" onClick={closeContactModal}>
+          <div className="contact-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Beneficiary Contact</h3>
+
+            <p><strong>Name:</strong> {selectedContact.matched_to}</p>
+            <p><strong>Email:</strong> {selectedContact.beneficiary_email}</p>
+            <p><strong>Phone:</strong> {selectedContact.beneficiary_phone}</p>
+
+            <a
+              className="whatsapp-btn"
+              href={`https://wa.me/${selectedContact.beneficiary_phone}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Chat on WhatsApp
+            </a>
+
+            <button className="close-contact-btn" onClick={closeContactModal}>Close</button>
           </div>
         </div>
       )}

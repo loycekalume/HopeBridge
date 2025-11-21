@@ -6,6 +6,7 @@ import DonationFormModal from "../../components/donor/donationForm";
 import type { DonationFormData } from "../../types/donationForm";
 import { formatDistanceToNow } from "date-fns";
 import "../../styles/donorDashboard.css";
+import ContactModal from "./contactModal";
 
 const MyDonations: React.FC = () => {
   const { token } = useAuth();
@@ -18,9 +19,16 @@ const MyDonations: React.FC = () => {
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [contactModalOpen, setContactModalOpen] = useState(false);
+  const [selectedContact, setSelectedContact] = useState<any>(null);
+
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
+  const openContactModal = (donation: any) => {
+    setSelectedContact(donation);
+    setContactModalOpen(true);
+  };
 
   // Fetch donations
   const fetchDonations = async () => {
@@ -159,23 +167,23 @@ const MyDonations: React.FC = () => {
                       <p className="match-text">
                         Matched with: <span className="match-name">{donation.matched_to}</span>
                       </p>
+
                       <p className="match-details">
                         City: {donation.matched_city} • Needs: {donation.matched_quantity} items
-                        {donation.match_percentage !== null && (
-                          <> • Match: {donation.match_percentage}%</>
-                        )}
+                        {donation.match_percentage !== null && <> • Match: {donation.match_percentage}%</>}
                       </p>
+
+                   
+
                       <button
                         className="match-details-btn"
-                        onClick={() =>
-                          alert(
-                            `Beneficiary: ${donation.matched_to}\nCity: ${donation.matched_location}\nNeeds: ${donation.matched_quantity}\nMatch: ${donation.match_percentage}%`
-                          )
-                        }
+                        onClick={() => openContactModal(donation)}
                       >
-                        View Details
+                        Contact Beneficiary
                       </button>
+
                     </div>
+
                   ) : (
                     <p className="match-pending">Not matched yet</p>
                   )}
@@ -200,6 +208,17 @@ const MyDonations: React.FC = () => {
           onSubmit={handleDonationSubmit}
           isSubmitting={isSubmitting}
         />
+
+        {selectedContact && (
+          <ContactModal
+            isOpen={contactModalOpen}
+            onClose={() => setContactModalOpen(false)}
+            name={selectedContact.matched_to}
+            email={selectedContact.matched_email}
+            phone={selectedContact.matched_phone}
+          />
+        )}
+
       </main>
     </div>
   );

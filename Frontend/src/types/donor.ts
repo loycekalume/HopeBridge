@@ -11,8 +11,12 @@ export interface Donation {
     category: string;
     created_at: string;
     status: 'Pending' | 'Matched' | 'Delivered';
-    matched_to: string | null; 
+    matched_to: string | null;
     photo_urls: string[] | null;
+    beneficiary_email?: string;
+    beneficiary_phone?: string;
+    beneficiary_city?: string;
+
 }
 
 export interface DashboardData {
