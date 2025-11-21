@@ -17,7 +17,7 @@ const Requests: React.FC = () => {
     try {
       setLoading(true);
       const data = await apiCall(
-        "/api/beneficiary/requests",
+        "/api/beneficiaryProfile/requests",
         "GET",
         undefined,
         token || ""
