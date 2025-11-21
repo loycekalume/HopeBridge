@@ -8,13 +8,15 @@ import {
   LogOut,
 } from "lucide-react";
 import "../../styles/companyDashboard.css";
+import { useAuth } from "../../context/authContext"; // <-- import context
 
 const CompanySidebar: React.FC = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth(); // <-- get logout from context
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
+    logout();          // clear user & token in context
+    navigate("/login"); // redirect to login page
   };
 
   return (
@@ -28,7 +30,7 @@ const CompanySidebar: React.FC = () => {
         <NavLink
           to="/company"
           className={({ isActive }) =>
-            isActive ? "sidebar-linkc active" : "sidebar-link"
+            isActive ? "sidebar-linkc active" : "sidebar-linkc"
           }
         >
           <LayoutDashboard size={20} />
@@ -38,7 +40,7 @@ const CompanySidebar: React.FC = () => {
         <NavLink
           to="/company/campaigns"
           className={({ isActive }) =>
-            isActive ? "sidebar-linkc active" : "sidebar-link"
+            isActive ? "sidebar-linkc active" : "sidebar-linkc"
           }
         >
           <Gift size={20} />
@@ -48,7 +50,7 @@ const CompanySidebar: React.FC = () => {
         <NavLink
           to="/company/donations"
           className={({ isActive }) =>
-            isActive ? "sidebar-linkc active" : "sidebar-link"
+            isActive ? "sidebar-linkc active" : "sidebar-linkc"
           }
         >
           <HandCoins size={20} />
@@ -58,14 +60,12 @@ const CompanySidebar: React.FC = () => {
         <NavLink
           to="/company/impacts"
           className={({ isActive }) =>
-            isActive ? "sidebar-linkc active" : "sidebar-link"
+            isActive ? "sidebar-linkc active" : "sidebar-linkc"
           }
         >
           <FileText size={20} />
           <span>Impact</span>
         </NavLink>
-
-     
       </nav>
 
       <button onClick={handleLogout} className="logout-btnc">
