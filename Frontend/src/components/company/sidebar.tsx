@@ -5,7 +5,6 @@ import {
   Gift,
   FileText,
   HandCoins,
-  Settings,
   LogOut,
 } from "lucide-react";
 import "../../styles/companyDashboard.css";
@@ -66,15 +65,7 @@ const CompanySidebar: React.FC = () => {
           <span>Impact</span>
         </NavLink>
 
-        <NavLink
-          to="/company/profile"
-          className={({ isActive }) =>
-            isActive ? "sidebar-linkc active" : "sidebar-link"
-          }
-        >
-          <Settings size={20} />
-          <span>Profile</span>
-        </NavLink>
+     
       </nav>
 
       <button onClick={handleLogout} className="logout-btnc">

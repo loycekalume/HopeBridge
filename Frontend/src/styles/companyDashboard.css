@@ -143,12 +143,11 @@
 
 .company-sidebar {
   width: 240px;
-  background-color: #1a1d23;
+  background-color: #1d3557;
   color: #f8f9fa;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   position: fixed;
   left: 0;
   top: 0;
@@ -191,17 +190,17 @@
 }
 
 .sidebar-linkc:hover {
-  background-color: #2b2f36;
+  background-color: #457b9d;
   color: #ffffff;
 }
 
 .sidebar-linkc.active {
-  background-color: #4f9efc;
+  background-color: #457b9d;
   color: #fff;
 }
 
 .logout-btnc {
-  margin-top: 20px;
+  margin-top: 180px;
   background: #e74c3c;
   color: white;
   border: none;
