@@ -14,7 +14,7 @@ https://hope-bridge-mu.vercel.app
 ### 🔹 Backend API (Render)  
 https://hopebridge-p2z0.onrender.com
 
-> Replace with your actual deployed URLs.
+> 
 
 ---
 
