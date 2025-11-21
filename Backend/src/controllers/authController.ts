@@ -173,14 +173,21 @@ export const getUserProfile = asyncHandler(async (req: UserRequest, res: Respons
 });
 
 //logout
-export const logout = async (req: Request, res: Response) => {
+// @desc    Logout user (invalidate refresh token)
+// @route   POST /api/auth/logout
+// @access  Public (frontend just calls it)
+export const logoutUser = asyncHandler(async (req: Request, res: Response) => {
   try {
-    // If using cookies:
-    res.clearCookie("token");
+    // Clear the HTTP-only refresh token cookie
+    res.clearCookie("refresh_token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+      path: "/", 
+    });
 
-
-    res.status(200).json({ message: "Logged out successfully" });
-  } catch (err) {
-    res.status(500).json({ error: "Logout failed" });
+    return res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: "Logout failed" });
   }
-};
+});
