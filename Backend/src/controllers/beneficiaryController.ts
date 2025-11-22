@@ -99,27 +99,33 @@ export const getMyBeneficiaryRequests = asyncHandler(async (req: Request, res: R
     const result = await pool.query(
       `
       SELECT 
-        br.request_id,
-        br.category,
-        br.title,
-        br.description,
-        br.urgency_level,
-        br.quantity,
-        br.location,
-        br.household_size,
-        br.status,
-        br.created_at,
-        d.donation_id AS matched_donation_id,
-        d.quantity AS donation_quantity,
-        d.location AS donor_location,
-        u.full_name AS donor_name
-      FROM beneficiary_requests br
-      LEFT JOIN donations d
-        ON br.matched_donation_id = d.donation_id
-      LEFT JOIN users u
-        ON d.donor_user_id = u.user_id
-      WHERE br.beneficiary_id = $1
-      ORDER BY br.created_at DESC;
+  br.request_id,
+  br.category,
+  br.title,
+  br.description,
+  br.urgency_level,
+  br.quantity,
+  br.location,
+  br.household_size,
+  br.status,
+  br.created_at,
+
+  d.donation_id AS matched_donation_id,
+  d.quantity AS donation_quantity,
+  d.location AS donor_location,
+
+  u.full_name AS donor_name,
+  u.email AS donor_email,         
+  u.phone AS donor_phone          
+
+FROM beneficiary_requests br
+LEFT JOIN donations d
+  ON br.matched_donation_id = d.donation_id
+LEFT JOIN users u
+  ON d.donor_user_id = u.user_id
+WHERE br.beneficiary_id = $1
+ORDER BY br.created_at DESC;
+
       `,
       [beneficiaryId]
     );
