@@ -16,9 +16,9 @@ const Sidebar: React.FC<SidebarProps> = ({ userRole }) => {
   const { user, logout, token } = useAuth();
 
   const menuItems = [
-    { label: "Dashboard", path: `/${userRole.toLowerCase()}`, icon: "fas fa-tachometer-alt" },
-    { label: "Donations", path: `/${userRole.toLowerCase()}/donations`, icon: "fas fa-gift" },
-    { label: "Requests", path: `/${userRole.toLowerCase()}/requests`, icon: "fas fa-list" },
+    { label: "Dashboard", path: `/beneficiary`, icon: "fas fa-tachometer-alt" },
+    { label: "Donations", path: `/beneficiary/donations`, icon: "fas fa-gift" },
+    { label: "Requests", path: `/beneficiary/requests`, icon: "fas fa-list" },
   ];
 
   const handleLogout = async () => {

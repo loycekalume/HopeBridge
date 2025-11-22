@@ -4,9 +4,10 @@ import "../../styles/beneficiacyDashboard.css";
 
 interface Props {
   data: Request;
+  onViewMatch: (matchedDonation: any) => void; // <--- add this
 }
 
-const RequestCard: React.FC<Props> = ({ data }) => {
+const RequestCard: React.FC<Props> = ({ data, onViewMatch }) => {
   const isMatched = !!data.matchedDonation;
 
   return (
@@ -20,13 +21,19 @@ const RequestCard: React.FC<Props> = ({ data }) => {
         <span className="time-ago">{data.timeAgo}</span>
       </div>
 
-      {/* Matched Donation Info */}
+      {/* Matched Donation Section */}
       {isMatched && data.matchedDonation ? (
         <div className="match-section">
           <p className="donor">Donor: {data.matchedDonation.donor}</p>
           <p className="location">Location: {data.matchedDonation.location}</p>
           <p className="percent-match">Match: {data.matchedDonation.matchPercent}%</p>
-          <button className="accept-btn">View Match</button>
+
+          <button
+            className="accept-btn"
+            onClick={() => onViewMatch(data.matchedDonation)}  // <-- OPEN MODAL
+          >
+            Contact Donor
+          </button>
         </div>
       ) : (
         <div className="match-section">
@@ -34,7 +41,7 @@ const RequestCard: React.FC<Props> = ({ data }) => {
         </div>
       )}
 
-      {/* Status & Actions for unmatched requests */}
+      {/* Status */}
       {!isMatched && (
         <div className="request-status-actions">
           <span className={`status ${data.status.toLowerCase()}-status`}>

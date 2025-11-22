@@ -5,11 +5,15 @@ import RequestHelpModal from "../../components/beneficiary/requestModal";
 import { apiCall } from "../../utils/api";
 import type { Request } from "../../types/beneficiary";
 import "../../styles/beneficiacyDashboard.css";
+import ContactModal from "../../components/beneficiary/contactModal"; // <--- import it
+
 
 const Requests: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [requests, setRequests] = useState<Request[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedMatch, setSelectedMatch] = useState<any | null>(null);
+
 
   const token = localStorage.getItem("token");
 
@@ -27,18 +31,21 @@ const Requests: React.FC = () => {
       const formatted: Request[] = data.requests.map((r: any) => ({
         id: r.request_id,
         name: r.title,
-        category: r.category, // ✅ use category
+        category: r.category, //  use category
         timeAgo: new Date(r.created_at).toLocaleDateString(),
         status: r.status,
         isMatch: !!r.matched_donation_id,
         matchedDonation: r.matched_donation_id
           ? {
             donor: r.donor_name,
+            email: r.donor_email,
+            phone: r.donor_phone,
             quantity: r.donation_quantity,
             location: r.donor_location,
             matchPercent: Math.min((r.donation_quantity / r.quantity) * 100, 100).toFixed(0),
           }
-          : null,
+          : null
+
       }));
 
 
@@ -74,8 +81,13 @@ const Requests: React.FC = () => {
           ) : requests.length > 0 ? (
             <div className="recent-requests-grid">
               {requests.map((request) => (
-                <RequestCard key={request.id} data={request} />
+                <RequestCard
+                  key={request.id}
+                  data={request}
+                  onViewMatch={(matched) => setSelectedMatch(matched)}   // <--- open modal
+                />
               ))}
+
             </div>
           ) : (
             <p>No requests yet. Click "Request Help" to create one.</p>
@@ -91,6 +103,13 @@ const Requests: React.FC = () => {
             }}
           />
         )}
+        {selectedMatch && (
+          <ContactModal
+            matchedDonation={selectedMatch}
+            onClose={() => setSelectedMatch(null)}
+          />
+        )}
+
       </div>
     </div>
   );

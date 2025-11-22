@@ -78,7 +78,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard-wrapperb">
-      <Sidebar userRole="Beneficiaryb" />
+      <Sidebar userRole="Beneficiary" />
 
       <div className="dashboard-mainb">
         {/* MAIN CONTENT LEFT SIDE */}
