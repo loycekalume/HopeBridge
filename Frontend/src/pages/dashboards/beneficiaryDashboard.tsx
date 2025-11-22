@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import StatsCard from "../../components/beneficiary/statsCard";
 import MatchRequestCard from "../../components/beneficiary/matchRequestCard";
+import ContactModal from "../../components/beneficiary/contactModal";
 import type { Stat, Request } from "../../types/beneficiary";
 import "../../styles/beneficiacyDashboard.css";
 import RequestHelpModal from "../../components/beneficiary/requestModal";
@@ -9,13 +10,12 @@ import Sidebar from "../../components/beneficiary/sidebar";
 import EditProfileModal from "../../components/beneficiary/editModal";
 
 const Dashboard: React.FC = () => {
-
   const [showModal, setShowModal] = useState(false);
   const [activeRequests, setActiveRequests] = useState<Request[]>([]);
   const [stats, setStats] = useState<Stat[]>([]);
   const [loading, setLoading] = useState(true);
   const [showProfileModal, setShowProfileModal] = useState(false);
-
+  const [selectedMatch, setSelectedMatch] = useState<any | null>(null); // <-- added for ContactModal
 
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -31,6 +31,16 @@ const Dashboard: React.FC = () => {
         timeAgo: new Date(r.created_at).toLocaleDateString(),
         status: r.status,
         isMatch: r.status === "Matched",
+        matchedDonation: r.matched_donation_id
+          ? {
+              donor: r.donor_name,
+              email: r.donor_email,
+              phone: r.donor_phone,
+              quantity: r.donation_quantity,
+              location: r.donor_location,
+              matchPercent: Math.min((r.donation_quantity / r.quantity) * 100, 100).toFixed(0),
+            }
+          : null,
       }));
       setActiveRequests(formatted);
     } catch (error: any) {
@@ -66,7 +76,6 @@ const Dashboard: React.FC = () => {
     return () => clearInterval(interval);
   }, [fetchStats, fetchRequests]);
 
-  // Function to generate initials
   const getInitials = (name: string) => {
     if (!name) return "U";
     return name
@@ -87,13 +96,10 @@ const Dashboard: React.FC = () => {
             <h1>Welcome back, {user.full_name?.split(" ")[0]} 👋</h1>
             <p>Here is your activity overview</p>
 
-
             <div className="dashboard-actionsb">
               <button className="request-help-btn" onClick={() => setShowModal(true)}>
                 <i className="fas fa-plus"></i> Request Help
               </button>
-
-
             </div>
           </header>
 
@@ -114,7 +120,11 @@ const Dashboard: React.FC = () => {
             ) : activeRequests.length > 0 ? (
               <div className="active-requests-grid">
                 {activeRequests.map((request) => (
-                  <MatchRequestCard key={request.id} data={request} />
+                  <MatchRequestCard
+                    key={request.id}
+                    data={request}
+                    onViewMatch={(matched) => setSelectedMatch(matched)} // <-- pass handler
+                  />
                 ))}
               </div>
             ) : (
@@ -122,7 +132,7 @@ const Dashboard: React.FC = () => {
             )}
           </section>
 
-
+          {/* Request Help Modal */}
           {showModal && (
             <RequestHelpModal
               onClose={() => setShowModal(false)}
@@ -130,6 +140,14 @@ const Dashboard: React.FC = () => {
                 fetchRequests();
                 fetchStats();
               }}
+            />
+          )}
+
+          {/* Contact Donor Modal */}
+          {selectedMatch && (
+            <ContactModal
+              matchedDonation={selectedMatch}
+              onClose={() => setSelectedMatch(null)}
             />
           )}
         </div>
@@ -147,10 +165,7 @@ const Dashboard: React.FC = () => {
               <p><strong>City:</strong> {user.city || "Not set"}</p>
             </div>
 
-            <button
-              className="edit-profile-btnb"
-              onClick={() => setShowProfileModal(true)}
-            >
+            <button className="edit-profile-btnb" onClick={() => setShowProfileModal(true)}>
               Edit Profile
             </button>
             {showProfileModal && (
@@ -161,7 +176,6 @@ const Dashboard: React.FC = () => {
                 onUpdated={() => window.location.reload()}
               />
             )}
-
           </div>
         </div>
       </div>
