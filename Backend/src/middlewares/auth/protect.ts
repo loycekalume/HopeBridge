@@ -32,10 +32,10 @@ export const protect = asyncHandler(async (req: UserRequest, res: Response, next
   }
 
   try {
-    // ✅ Verify token
+    //  Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
 
-    // ✅ Query user from DB
+    //  Query user from DB
     const userQuery = await pool.query(
       "SELECT user_id, email, full_name, phone, role FROM users WHERE user_id = $1",
       [decoded.userId]
@@ -46,7 +46,7 @@ export const protect = asyncHandler(async (req: UserRequest, res: Response, next
       return;
     }
 
-    // ✅ Attach user info to the request
+    //  Attach user info to the request
     req.user = userQuery.rows[0];
     next();
   } catch (error) {
@@ -55,7 +55,7 @@ export const protect = asyncHandler(async (req: UserRequest, res: Response, next
   }
 });
 
-// ✅ Middleware to allow only specific roles
+//  Middleware to allow only specific roles
 export const requireRole = (allowedRoles: string | string[]) => {
   return (req: UserRequest, res: Response, next: NextFunction) => {
     if (!req.user) {
@@ -73,3 +73,5 @@ export const requireRole = (allowedRoles: string | string[]) => {
     next();
   };
 };
+
+
