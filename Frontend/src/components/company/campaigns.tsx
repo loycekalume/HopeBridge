@@ -12,6 +12,7 @@ interface Campaign {
   start_date: string;
   end_date: string;
   status: string;
+  company_id?: number;
 }
 
 const CompanyCampaigns: React.FC = () => {
@@ -19,6 +20,7 @@ const CompanyCampaigns: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
+
   const [newCampaign, setNewCampaign] = useState({
     title: "",
     description: "",
@@ -26,13 +28,17 @@ const CompanyCampaigns: React.FC = () => {
     start_date: "",
     end_date: "",
   });
+
   const [loading, setLoading] = useState(true);
 
-  // ✅ Fetch campaigns
+  const companyId = localStorage.getItem("company_id");
+
+  // Fetch campaigns *belonging to this company only*
   const fetchCampaigns = async () => {
     setLoading(true);
     try {
-      const res = await apiCall("/api/campaigns", "GET");
+      const res = await apiCall(`/api/campaigns?companyId=${companyId}`, "GET");
+
       if (res && Array.isArray(res.campaigns)) {
         setCampaigns(res.campaigns);
       } else {
@@ -46,15 +52,18 @@ const CompanyCampaigns: React.FC = () => {
     }
   };
 
-  // ✅ Create new campaign
+  // Create campaign
   const handleCreateCampaign = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const payload = {
         ...newCampaign,
         goal_amount: Number(newCampaign.goal_amount),
+        company_id: companyId,
       };
+
       const res = await apiCall("/api/campaigns", "POST", payload);
+
       if (res.campaign) {
         setShowModal(false);
         setNewCampaign({
@@ -71,28 +80,35 @@ const CompanyCampaigns: React.FC = () => {
     }
   };
 
-  // ✅ Update campaign (PUT)
+  // Update campaign
   const handleUpdateCampaign = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingCampaign) return;
 
     try {
-      const payload = {
-        title: editingCampaign.title,
-        description: editingCampaign.description,
-        goal_amount: editingCampaign.goal_amount,
-        total_raised: editingCampaign.total_raised,
-        start_date: editingCampaign.start_date,
-        end_date: editingCampaign.end_date,
-        status: editingCampaign.status,
-      };
+      await apiCall(
+        `/api/campaigns/${editingCampaign.campaign_id}`,
+        "PUT",
+        editingCampaign
+      );
 
-      await apiCall(`/api/campaigns/${editingCampaign.campaign_id}`, "PUT", payload);
       setShowEditModal(false);
       setEditingCampaign(null);
       fetchCampaigns();
     } catch (error) {
       console.error("Error updating campaign:", error);
+    }
+  };
+
+  // Delete campaign
+  const handleDelete = async (id: number) => {
+    if (!window.confirm("Are you sure you want to delete this campaign?")) return;
+
+    try {
+      await apiCall(`/api/campaigns/${id}`, "DELETE");
+      setCampaigns(campaigns.filter((c) => c.campaign_id !== id));
+    } catch (error) {
+      console.error("Error deleting campaign:", error);
     }
   };
 
@@ -105,7 +121,7 @@ const CompanyCampaigns: React.FC = () => {
       <CompanySidebar />
       <main className="company-campaigns-main">
         <div className="campaigns-header">
-          <h1>Company Campaigns</h1>
+          <h1>Your Campaigns</h1>
           <button className="create-btn" onClick={() => setShowModal(true)}>
             + New Campaign
           </button>
@@ -114,11 +130,15 @@ const CompanyCampaigns: React.FC = () => {
         {loading ? (
           <div className="loading">Loading campaigns...</div>
         ) : campaigns.length === 0 ? (
-          <p className="no-campaigns">No campaigns found.</p>
+          <p className="no-campaigns">You haven't created any campaigns yet.</p>
         ) : (
           <div className="campaigns-grid">
             {campaigns.map((c) => {
-              const progress = Math.min((c.total_raised / c.goal_amount) * 100, 100);
+              const progress = Math.min(
+                (c.total_raised / c.goal_amount) * 100,
+                100
+              );
+
               return (
                 <div key={c.campaign_id} className="campaign-card">
                   <h3>{c.title}</h3>
@@ -129,39 +149,40 @@ const CompanyCampaigns: React.FC = () => {
                   </p>
 
                   <div className="campaign-stats">
-                    <p>
-                      <strong>Goal:</strong> ${c.goal_amount.toLocaleString()}
-                    </p>
-                    <p>
-                      <strong>Raised:</strong> ${c.total_raised.toLocaleString()}
-                    </p>
+                    <p><strong>Goal:</strong> ${c.goal_amount.toLocaleString()}</p>
+                    <p><strong>Raised:</strong> ${c.total_raised.toLocaleString()}</p>
                   </div>
 
                   <div className="progress-bar">
-                    <div className="progress-fill" style={{ width: `${progress}%` }}></div>
+                    <div
+                      className="progress-fill"
+                      style={{ width: `${progress}%` }}
+                    ></div>
                   </div>
 
                   <div className="campaign-footer">
-                    <span
-                      className={`status ${
-                        c.status.toLowerCase() === "active"
-                          ? "active"
-                          : c.status.toLowerCase() === "completed"
-                          ? "completed"
-                          : "pending"
-                      }`}
-                    >
+                    <span className={`status ${c.status.toLowerCase()}`}>
                       {c.status}
                     </span>
-                    <button
-                      className="view-btn"
-                      onClick={() => {
-                        setEditingCampaign(c);
-                        setShowEditModal(true);
-                      }}
-                    >
-                      Edit
-                    </button>
+
+                    <div className="card-actions">
+                      <button
+                        className="view-btn"
+                        onClick={() => {
+                          setEditingCampaign(c);
+                          setShowEditModal(true);
+                        }}
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        className="delete-btn"
+                        onClick={() => handleDelete(c.campaign_id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -170,46 +191,73 @@ const CompanyCampaigns: React.FC = () => {
         )}
       </main>
 
-      {/* Modal — Create Campaign */}
+      {/* Create Modal */}
       {showModal && (
         <div className="modal-overlay4">
           <div className="modal4">
-            <h2>Create New Campaign</h2>
+            <h2>Create Campaign</h2>
             <form onSubmit={handleCreateCampaign}>
               <input
                 type="text"
                 placeholder="Title"
                 value={newCampaign.title}
-                onChange={(e) => setNewCampaign({ ...newCampaign, title: e.target.value })}
+                onChange={(e) =>
+                  setNewCampaign({ ...newCampaign, title: e.target.value })
+                }
                 required
               />
+
               <textarea
                 placeholder="Description"
                 value={newCampaign.description}
-                onChange={(e) => setNewCampaign({ ...newCampaign, description: e.target.value })}
+                onChange={(e) =>
+                  setNewCampaign({
+                    ...newCampaign,
+                    description: e.target.value,
+                  })
+                }
                 required
               />
+
               <input
                 type="number"
                 placeholder="Goal Amount"
                 value={newCampaign.goal_amount}
-                onChange={(e) => setNewCampaign({ ...newCampaign, goal_amount: e.target.value })}
+                onChange={(e) =>
+                  setNewCampaign({
+                    ...newCampaign,
+                    goal_amount: e.target.value,
+                  })
+                }
                 required
               />
+
               <div className="date-inputs">
                 <input
                   type="date"
                   value={newCampaign.start_date}
-                  onChange={(e) => setNewCampaign({ ...newCampaign, start_date: e.target.value })}
+                  onChange={(e) =>
+                    setNewCampaign({
+                      ...newCampaign,
+                      start_date: e.target.value,
+                    })
+                  }
                   required
                 />
+
                 <input
                   type="date"
                   value={newCampaign.end_date}
-                  onChange={(e) => setNewCampaign({ ...newCampaign, end_date: e.target.value })}
+                  onChange={(e) =>
+                    setNewCampaign({
+                      ...newCampaign,
+                      end_date: e.target.value,
+                    })
+                  }
                   required
                 />
               </div>
+
               <div className="modal-actions4">
                 <button type="button" onClick={() => setShowModal(false)}>
                   Cancel
@@ -221,7 +269,7 @@ const CompanyCampaigns: React.FC = () => {
         </div>
       )}
 
-      {/* Modal — Edit Campaign */}
+      {/* Edit Modal */}
       {showEditModal && editingCampaign && (
         <div className="modal-overlay4">
           <div className="modal4">
@@ -231,15 +279,23 @@ const CompanyCampaigns: React.FC = () => {
                 type="text"
                 value={editingCampaign.title}
                 onChange={(e) =>
-                  setEditingCampaign({ ...editingCampaign, title: e.target.value })
+                  setEditingCampaign({
+                    ...editingCampaign,
+                    title: e.target.value,
+                  })
                 }
               />
+
               <textarea
                 value={editingCampaign.description}
                 onChange={(e) =>
-                  setEditingCampaign({ ...editingCampaign, description: e.target.value })
+                  setEditingCampaign({
+                    ...editingCampaign,
+                    description: e.target.value,
+                  })
                 }
               />
+
               <input
                 type="number"
                 value={editingCampaign.goal_amount}
@@ -250,6 +306,7 @@ const CompanyCampaigns: React.FC = () => {
                   })
                 }
               />
+
               <input
                 type="number"
                 value={editingCampaign.total_raised}
@@ -260,6 +317,7 @@ const CompanyCampaigns: React.FC = () => {
                   })
                 }
               />
+
               <select
                 value={editingCampaign.status}
                 onChange={(e) =>
@@ -273,6 +331,7 @@ const CompanyCampaigns: React.FC = () => {
                 <option value="Active">Active</option>
                 <option value="Completed">Completed</option>
               </select>
+
               <div className="modal-actions4">
                 <button type="button" onClick={() => setShowEditModal(false)}>
                   Cancel
