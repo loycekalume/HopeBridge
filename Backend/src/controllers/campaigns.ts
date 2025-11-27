@@ -1,14 +1,16 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import pool from "../db/db.config";
 import asyncHandler from "../middlewares/asyncHandler";
+import { UserRequest } from "../utils/types/userTypes";
 
 // =============================
 // @desc    Create a new campaign
 // @route   POST /api/company/campaigns
-// @access  Private
+// @access  Private (Company only)
 // =============================
-export const createCampaign = asyncHandler(async (req: Request, res: Response) => {
+export const createCampaign = asyncHandler(async (req: UserRequest, res: Response) => {
   const { title, description, goal_amount, start_date, end_date } = req.body;
+  const companyId = req.user!.user_id;
 
   if (!title || !description || !goal_amount || !start_date || !end_date) {
     return res.status(400).json({ message: "Missing required fields." });
@@ -18,11 +20,11 @@ export const createCampaign = asyncHandler(async (req: Request, res: Response) =
   try {
     const result = await client.query(
       `
-      INSERT INTO campaigns (title, description, goal_amount, start_date, end_date, status)
-      VALUES ($1, $2, $3, $4, $5, 'Pending')
+      INSERT INTO campaigns (title, description, goal_amount, start_date, end_date, status, company_id)
+      VALUES ($1, $2, $3, $4, $5, 'Pending', $6)
       RETURNING *;
       `,
-      [title, description, goal_amount, start_date, end_date]
+      [title, description, goal_amount, start_date, end_date, companyId]
     );
 
     res.status(201).json({
@@ -34,8 +36,13 @@ export const createCampaign = asyncHandler(async (req: Request, res: Response) =
   }
 });
 
-
-export const getAllCampaigns = asyncHandler(async (req: Request, res: Response) => {
+// =============================
+// @desc    Get all campaigns for the logged-in company
+// @route   GET /api/company/campaigns
+// @access  Private (Company only)
+// =============================
+export const getAllCampaigns = asyncHandler(async (req: UserRequest, res: Response) => {
+  const companyId = req.user!.user_id;
   const client = await pool.connect();
 
   try {
@@ -43,8 +50,10 @@ export const getAllCampaigns = asyncHandler(async (req: Request, res: Response) 
       `
       SELECT *
       FROM campaigns
+      WHERE company_id = $1
       ORDER BY created_at DESC;
-      `
+      `,
+      [companyId]
     );
 
     res.status(200).json({
@@ -57,12 +66,13 @@ export const getAllCampaigns = asyncHandler(async (req: Request, res: Response) 
 });
 
 // =============================
-// @desc    Get a single campaign by ID
+// @desc    Get a single campaign by ID (only if owned by company)
 // @route   GET /api/company/campaigns/:campaignId
-// @access  Private
+// @access  Private (Company only)
 // =============================
-export const getCampaignById = asyncHandler(async (req: Request, res: Response) => {
+export const getCampaignById = asyncHandler(async (req: UserRequest, res: Response) => {
   const { campaignId } = req.params;
+  const companyId = req.user!.user_id;
   const client = await pool.connect();
 
   try {
@@ -70,13 +80,13 @@ export const getCampaignById = asyncHandler(async (req: Request, res: Response) 
       `
       SELECT *
       FROM campaigns
-      WHERE campaign_id = $1;
+      WHERE campaign_id = $1 AND company_id = $2;
       `,
-      [campaignId]
+      [campaignId, companyId]
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ message: "Campaign not found." });
+      return res.status(404).json({ message: "Campaign not found or access denied." });
     }
 
     res.status(200).json(result.rows[0]);
@@ -84,13 +94,15 @@ export const getCampaignById = asyncHandler(async (req: Request, res: Response) 
     client.release();
   }
 });
+
 // =============================
-// @desc    Update a campaign
+// @desc    Update a campaign (only if owned by company)
 // @route   PUT /api/company/campaigns/:campaignId
-// @access  Private
+// @access  Private (Company only)
 // =============================
-export const updateCampaign = asyncHandler(async (req: Request, res: Response) => {
+export const updateCampaign = asyncHandler(async (req: UserRequest, res: Response) => {
   const { campaignId } = req.params;
+  const companyId = req.user!.user_id;
   const { title, description, goal_amount, total_raised, start_date, end_date, status } = req.body;
 
   const client = await pool.connect();
@@ -107,14 +119,14 @@ export const updateCampaign = asyncHandler(async (req: Request, res: Response) =
         end_date = COALESCE($6, end_date),
         status = COALESCE($7, status),
         updated_at = NOW()
-      WHERE campaign_id = $8
+      WHERE campaign_id = $8 AND company_id = $9
       RETURNING *;
       `,
-      [title, description, goal_amount, total_raised, start_date, end_date, status, campaignId]
+      [title, description, goal_amount, total_raised, start_date, end_date, status, campaignId, companyId]
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ message: "Campaign not found." });
+      return res.status(404).json({ message: "Campaign not found or access denied." });
     }
 
     res.status(200).json({
@@ -126,29 +138,28 @@ export const updateCampaign = asyncHandler(async (req: Request, res: Response) =
   }
 });
 
-
-
 // =============================
-// @desc    Delete a campaign
+// @desc    Delete a campaign (only if owned by company)
 // @route   DELETE /api/company/campaigns/:campaignId
-// @access  Private
+// @access  Private (Company only)
 // =============================
-export const deleteCampaign = asyncHandler(async (req: Request, res: Response) => {
+export const deleteCampaign = asyncHandler(async (req: UserRequest, res: Response) => {
   const { campaignId } = req.params;
+  const companyId = req.user!.user_id;
   const client = await pool.connect();
 
   try {
     const result = await client.query(
       `
       DELETE FROM campaigns
-      WHERE campaign_id = $1
+      WHERE campaign_id = $1 AND company_id = $2
       RETURNING *;
       `,
-      [campaignId]
+      [campaignId, companyId]
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ message: "Campaign not found." });
+      return res.status(404).json({ message: "Campaign not found or access denied." });
     }
 
     res.status(200).json({
@@ -160,16 +171,14 @@ export const deleteCampaign = asyncHandler(async (req: Request, res: Response) =
   }
 });
 
-export const getCompanyImpacts = asyncHandler(async (req: Request, res: Response) => {
-  const { companyId } = req.query; // pass companyId via query, e.g. /api/company/impacts?companyId=1
 
-  if (!companyId) {
-    return res.status(400).json({ message: "Missing companyId in request." });
-  }
 
+export const getCompanyImpacts = asyncHandler(async (req: UserRequest, res: Response) => {
+  const companyId = req.user!.user_id; // get company ID from logged-in user
   const client = await pool.connect();
+
   try {
-    // 1️⃣ Total donations + beneficiaries per campaign
+    // Total donations + beneficiaries per campaign
     const campaignRes = await client.query(
       `
       SELECT 
@@ -186,7 +195,7 @@ export const getCompanyImpacts = asyncHandler(async (req: Request, res: Response
       [companyId]
     );
 
-    // 2️⃣ Monthly donations (for line chart)
+    // Monthly donations for line chart
     const monthlyRes = await client.query(
       `
       SELECT 

@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { protect, requireRole } from "../middlewares/auth/protect";
 import {
   getAllCampaigns,
   getCampaignById,
@@ -15,19 +16,13 @@ const router = Router();
 // Base path: /api/company/campaigns
 // =============================
 
-// Get all campaigns
-router.get("/", getAllCampaigns);
-// Create a new campaign
-router.post("/", createCampaign);
-// Get a single campaign by ID
-router.get("/:campaignId", getCampaignById);
 
-router.get("/impacts",  getCompanyImpacts);
 
-// Update a campaign (partial update with COALESCE)
-router.put("/:campaignId", updateCampaign);
-
-// Delete a campaign
-router.delete("/:campaignId", deleteCampaign);
+router.get("/", protect, requireRole(["company","admin"]), getAllCampaigns);
+router.post("/", protect, requireRole("company"), createCampaign);
+router.get("/:campaignId", protect, requireRole("company"), getCampaignById);
+router.put("/:campaignId", protect, requireRole("company"), updateCampaign);
+router.delete("/:campaignId", protect, requireRole("company"), deleteCampaign);
+router.get("/impacts", protect, requireRole("company"), getCompanyImpacts);
 
 export default router;
