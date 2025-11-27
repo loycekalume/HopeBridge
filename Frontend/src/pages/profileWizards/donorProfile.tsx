@@ -5,118 +5,135 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/authContext';
 import type { DonorProfileData } from '../../types/donorProfile';
 import '../../styles/donorProfile.css';
-import { FaUpload, FaCheckSquare } from 'react-icons/fa'; 
- import { apiCall } from '../../utils/api'; 
+import { FaUpload, FaCheckSquare } from 'react-icons/fa';
+import { apiCall } from '../../utils/api';
 
 // --- Sub-Components ---
 
-const Step1BasicInfo: React.FC<{ 
-    data: Partial<DonorProfileData>, 
-    user: any, 
-    update: (name: keyof DonorProfileData, value: string) => void 
+const Step1BasicInfo: React.FC<{
+    data: Partial<DonorProfileData>,
+    user: any,
+    update: (name: keyof DonorProfileData, value: string) => void
 }> = ({ data, user, update }) => {
-    
+
     return (
         <div className="wizard-step-card">
             <h2 className="step-card-title">Basic Information</h2>
             <p className="step-subtitle">Tell us about yourself</p>
 
             <div className="form-grid-2">
-                {/* Read-Only Fields */}
+
                 <div className="input-group"><label>Full Name *</label><input type="text" value={user?.full_name || ''} readOnly disabled /></div>
                 <div className="input-group"><label>Email Address *</label><input type="email" value={user?.email || ''} readOnly disabled /></div>
                 <div className="input-group"><label>Password *</label><input type="password" value="********" readOnly disabled /></div>
                 <div className="input-group"><label>Confirm Password *</label><input type="password" value="********" readOnly disabled /></div>
                 <div className="input-group full-width"><label>Phone Number *</label><input type="tel" value={user?.phone || ''} readOnly disabled /></div>
-                
-                {/* Editable Fields */}
+
                 <div className="input-group full-width"><label>Street Address *</label><input type="text" value={data.street_address || ''} onChange={(e) => update('street_address', e.target.value)} placeholder="Kimathi" required /></div>
                 <div className="input-group"><label>City *</label><input type="text" value={data.city || ''} onChange={(e) => update('city', e.target.value)} placeholder="Nyeri, Kenya" required /></div>
                 <div className="input-group"><label>State/Region *</label><input type="text" value={data.state_region || ''} onChange={(e) => update('state_region', e.target.value)} placeholder="Central" required /></div>
 
                 <div className="input-group full-width">
                     <label>About You</label>
-                    <textarea value={data.about_you || ''} onChange={(e) => update('about_you', e.target.value)} placeholder="e.g., We are a thriving supermarket willing to offer excess goods, or I am an individual who donates regularly." rows={3} />
+                    <textarea value={data.about_you || ''} onChange={(e) => update('about_you', e.target.value)} placeholder="e.g., We are a supermarket donating excess goods, or I am an individual donor." rows={3} />
                 </div>
             </div>
         </div>
     );
 };
 
-const Step2Verification: React.FC<{ 
-    data: Partial<DonorProfileData>, 
-    onFileUpload: (file: File) => void, // Returns void, as the function is async but we don't await the return value here
+const Step2Verification: React.FC<{
+    data: Partial<DonorProfileData>,
+    onFileUpload: (file: File, field: 'gov_id_url' | 'registration_cert_url') => void
     isUploading: boolean,
-    isCompany: boolean // 🚨 FIX 1: Prop added to interface
-}> = ({ data, onFileUpload, isUploading, isCompany }) => { // 🚨 FIX 2: Prop destructured
-    
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    isCompany: boolean
+}> = ({ data, onFileUpload,  isCompany }) => {
+
+    const handleFileChange = (
+        e: React.ChangeEvent<HTMLInputElement>,
+        field: 'gov_id_url' | 'registration_cert_url'
+    ) => {
         if (e.target.files && e.target.files.length > 0) {
-            onFileUpload(e.target.files[0]);
+            onFileUpload(e.target.files[0], field);
         }
     };
+
+    const UploadBox = (uploaded: boolean, label: string) => (
+        uploaded ? (
+            <div className="uploaded-indicator">
+                <FaCheckSquare className="check-icon" />
+                <span>{label} uploaded</span>
+            </div>
+        ) : (
+            <div className="upload-prompt">
+                <FaUpload className="upload-icon" />
+                <span>Click to upload</span>
+            </div>
+        )
+    );
 
     return (
         <div className="wizard-step-card">
             <h2 className="step-card-title">Verification Documents</h2>
-            <p className="step-subtitle">Help us ensure safety and trust in our community</p>
+            <p className="step-subtitle">Help us maintain safety and trust</p>
 
             <div className="info-box">
-                <p><strong>Why we need verification:</strong> To maintain a safe and trustworthy platform, we verify all users. Your documents are encrypted and only used for verification purposes.</p>
+                <p><strong>Why we need verification:</strong> All documents are encrypted and used only for verification.</p>
             </div>
-            
+
             <div className="form-grid-2">
-                {/* Document 1: Government ID (REQUIRED for all) */}
+
+                {/* GOVERNMENT ID - ALWAYS REQUIRED */}
                 <div className={`input-group ${!isCompany ? 'full-width' : ''}`}>
                     <label>Government-Issued ID *</label>
-                    <div 
+
+                    <div
                         className={`file-upload-box ${data.gov_id_url ? 'file-uploaded' : ''}`}
                         onClick={() => document.getElementById('file-upload-input-id')?.click()}
                     >
-                        {isUploading && <span className="file-name">Uploading...</span>}
-                        {!isUploading && data.gov_id_url && <span className="file-name"><FaCheckSquare /> Document Uploaded</span>}
-                        {!isUploading && !data.gov_id_url && (
-                            <>
-                                <FaUpload size={30} />
-                                <span>Upload ID Document</span>
-                                <small>Driver's license, passport, or national ID</small>
-                            </>
-                        )}
-                        <input id="file-upload-input-id" type="file" style={{ display: 'none' }} onChange={handleFileChange} accept="image/*,application/pdf" />
+                        {UploadBox(!!data.gov_id_url, "Document")}
+                        <input
+                            id="file-upload-input-id"
+                            type="file"
+                            style={{ display: 'none' }}
+                            onChange={(e) => handleFileChange(e, 'gov_id_url')}
+                            accept="image/*,application/pdf"
+                        />
                     </div>
                 </div>
 
-                {/* Document 2: Registration Certificate (Conditional rendering using isCompany) */}
+                {/* REGISTRATION CERT - ONLY FOR COMPANIES */}
                 {isCompany && (
                     <div className="input-group">
                         <label>Registration Certificate *</label>
-                        <div 
+
+                        <div
                             className={`file-upload-box ${data.registration_cert_url ? 'file-uploaded' : ''}`}
                             onClick={() => document.getElementById('file-upload-input-cert')?.click()}
                         >
-                            {isUploading && <span className="file-name">Uploading...</span>}
-                            {!isUploading && data.registration_cert_url && <span className="file-name"><FaCheckSquare /> Certificate Uploaded</span>}
-                            {!isUploading && !data.registration_cert_url && (
-                                <>
-                                    <FaUpload size={30} />
-                                    <span>Upload Registration Certificate</span>
-                                    <small>Official government/tax registration document</small>
-                                </>
-                            )}
-                            <input id="file-upload-input-cert" type="file" style={{ display: 'none' }} onChange={handleFileChange} accept="image/*,application/pdf" />
+                            {UploadBox(!!data.registration_cert_url, "Certificate")}
+                            <input
+                                id="file-upload-input-cert"
+                                type="file"
+                                style={{ display: 'none' }}
+                                onChange={(e) => handleFileChange(e, 'registration_cert_url')}
+                                accept="image/*,application/pdf"
+                            />
                         </div>
                     </div>
                 )}
-            </div>
-            <small className="upload-note full-width">All documents must be in JPG, PNG, or PDF format. Max size 5MB.</small>
-            
-            <div className="terms-note-text">
-                 By completing this profile, you confirm your acceptance of the 
-                 <a href="/terms" target="_blank"> Terms of Service</a> and 
-                 <a href="/privacy" target="_blank"> Privacy Policy</a>, 
-                 which were accepted during registration.
+
             </div>
 
+            <small className="upload-note full-width">
+                Supported formats: JPG, PNG, PDF — Max size 5MB.
+            </small>
+
+            <div className="terms-note-text">
+                By completing this profile, you agree to our
+                <a href="/terms" target="_blank"> Terms of Service</a> and
+                <a href="/privacy" target="_blank"> Privacy Policy</a>.
+            </div>
         </div>
     );
 };
@@ -138,14 +155,12 @@ export default function DonorProfileWizard() {
     const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
     const currentUserRole = user?.role;
-    const isCompany = currentUserRole === 'company'; // Defined here for passing to sub-components
+    const isCompany = currentUserRole === 'company';
 
-
-    
     useEffect(() => {
-        if (user === undefined) return; 
+        if (user === undefined) return;
         setIsCheckingAuth(false);
-        
+
         const isDonorRoute = (role === 'donor' || role === 'company');
 
         if (user === null) {
@@ -153,37 +168,32 @@ export default function DonorProfileWizard() {
             return;
         }
 
-        // Check for INVALID ACCESS (Wrong role or already complete)
         if (user.is_profile_complete || !isDonorRoute || (user.role !== 'donor' && user.role !== 'company')) {
             const destination = user.is_profile_complete ? `/${user.role}` : '/login';
             navigate(destination, { replace: true });
         }
-        
-    }, [user, navigate, role]);
 
+    }, [user, navigate, role]);
 
     if (isCheckingAuth || !user) {
         return <div className="loading-screen">Verifying profile access...</div>;
     }
 
-
     const updateProfileData = (name: keyof DonorProfileData, value: string) => {
         setProfileData(prev => ({ ...prev, [name]: value }));
     };
-    
-    // Simulating File Upload (Unified handler for both document types)
-    const handleFileUpload = async (file: File) => {
+
+    const handleFileUpload = async (file: File, field: 'gov_id_url' | 'registration_cert_url') => {
         setIsUploading(true);
         setError(null);
-        
-        // Simple logic to determine which field to update (Gov ID is default, check for 'cert' in name)
-        const fileUploadType = file.name.toLowerCase().includes('cert') ? 'registration_cert_url' : 'gov_id_url';
 
         try {
-            console.log(`Starting upload for file: ${file.name} to field: ${fileUploadType}`); 
-            await new Promise(resolve => setTimeout(resolve, 1500)); 
-            
-            updateProfileData(fileUploadType, `https://cdn.hopebridge.org/uploads/${user.user_id}-${fileUploadType}-${Date.now()}.pdf`);
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            updateProfileData(
+                field,
+                `https://cdn.hopebridge.org/uploads/${user.user_id}-${field}-${Date.now()}.pdf`
+            );
 
         } catch (e) {
             setError("File upload failed.");
@@ -194,59 +204,52 @@ export default function DonorProfileWizard() {
 
     const handleNext = () => {
         const d = profileData;
-        // Step 1 Validation
+
         if (step === 1) {
             if (!d.street_address || !d.city || !d.state_region) {
-                setError("Please complete all required location fields.");
+                setError("Please complete all required fields.");
                 return;
             }
         }
+
         setError(null);
         setStep(step + 1);
     };
 
- 
+    const handleFinish = async () => {
+        const d = profileData;
 
-// inside DonorProfileWizard
-const handleFinish = async () => {
-  const d = profileData;
+        if (!d.gov_id_url) {
+            setError("Please upload your Government-Issued ID.");
+            return;
+        }
 
-  // 1. Universal Validation: Gov ID is required for ALL donors/companies
-  if (!d.gov_id_url) {
-    setError("Please upload the Government-Issued ID.");
-    return;
-  }
+        if (isCompany && !d.registration_cert_url) {
+            setError("Please upload your Company Registration Certificate.");
+            return;
+        }
 
-  // 2. Conditional Validation: Registration Cert is ONLY required for companies
-  if (isCompany && !d.registration_cert_url) {
-    setError("Please upload the Company Registration Certificate.");
-    return;
-  }
+        setIsLoading(true);
+        setError(null);
 
-  setIsLoading(true);
-  setError(null);
+        try {
+            const data = await apiCall(
+                `/api/donorprofile/${user?.user_id}/profile/donor`,
+                'PUT',
+                profileData
+            );
 
-  try {
-    // ✅ Use centralized API helper
-    const data = await apiCall(
-      `/api/donorprofile/${user?.user_id}/profile/donor`,
-      'PUT',
-      profileData
-    );
+            authLogin(data.accessToken, { ...user!, is_profile_complete: true });
 
-    // Update user in global auth context
-    authLogin(data.accessToken, { ...user!, is_profile_complete: true });
+            alert("Profile completed successfully!");
+            navigate('/donor', { replace: true });
 
-    alert("Profile completed successfully!");
-    navigate('/donor', { replace: true });
-
-  } catch (err: any) {
-    console.error("Profile submission error:", err);
-    setError(err.message || "Network error during profile submission.");
-  } finally {
-    setIsLoading(false);
-  }
-};
+        } catch (err: any) {
+            setError(err.message || "Network error during profile submission.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
 
     const renderStep = () => {
@@ -254,19 +257,17 @@ const handleFinish = async () => {
             case 1:
                 return <Step1BasicInfo data={profileData} user={user} update={updateProfileData} />;
             case 2:
-                // 🚨 FIX 4: Pass the isCompany flag correctly to the sub-component
                 return <Step2Verification data={profileData} onFileUpload={handleFileUpload} isUploading={isUploading} isCompany={isCompany} />;
             default:
                 return <div>Unexpected Step!</div>;
         }
     };
 
-    // Main Render
     return (
         <div className="wizard-container">
             <div className="wizard-box">
                 <h1 className="wizard-title">Donor Profile Completion</h1>
-                
+
                 <div className="wizard-step-tracker">
                     <span className={step === 1 ? 'active' : ''}>1. Basic Info</span>
                     <span className={step === 2 ? 'active' : ''}>2. Verification</span>
@@ -282,16 +283,17 @@ const handleFinish = async () => {
                             Back
                         </button>
                     )}
+
                     {step < TOTAL_STEPS && (
                         <button className="next-btn" onClick={handleNext} disabled={isLoading || isUploading}>
                             Next
                         </button>
                     )}
+
                     {step === TOTAL_STEPS && (
-                        <button 
-                            className="finish-btn" 
-                            onClick={handleFinish} 
-                            // Disable if Gov ID is missing OR (isCompany AND Cert is missing)
+                        <button
+                            className="finish-btn"
+                            onClick={handleFinish}
                             disabled={isLoading || isUploading || !profileData.gov_id_url || (isCompany && !profileData.registration_cert_url)}
                         >
                             {isLoading ? 'Completing Profile...' : 'Complete Profile'}
@@ -299,6 +301,7 @@ const handleFinish = async () => {
                         </button>
                     )}
                 </div>
+
                 {error && <p className="error-message">{error}</p>}
             </div>
         </div>
