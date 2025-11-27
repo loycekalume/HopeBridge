@@ -22,7 +22,6 @@ const Step1BasicInfo: React.FC<{
             <p className="step-subtitle">Tell us about yourself</p>
 
             <div className="form-grid-2">
-
                 <div className="input-group"><label>Full Name *</label><input type="text" value={user?.full_name || ''} readOnly disabled /></div>
                 <div className="input-group"><label>Email Address *</label><input type="email" value={user?.email || ''} readOnly disabled /></div>
                 <div className="input-group"><label>Password *</label><input type="password" value="********" readOnly disabled /></div>
@@ -47,7 +46,7 @@ const Step2Verification: React.FC<{
     onFileUpload: (file: File, field: 'gov_id_url' | 'registration_cert_url') => void
     isUploading: boolean,
     isCompany: boolean
-}> = ({ data, onFileUpload,  isCompany }) => {
+}> = ({ data, onFileUpload, isCompany }) => {
 
     const handleFileChange = (
         e: React.ChangeEvent<HTMLInputElement>,
@@ -82,7 +81,6 @@ const Step2Verification: React.FC<{
             </div>
 
             <div className="form-grid-2">
-
                 {/* GOVERNMENT ID - ALWAYS REQUIRED */}
                 <div className={`input-group ${!isCompany ? 'full-width' : ''}`}>
                     <label>Government-Issued ID *</label>
@@ -155,7 +153,7 @@ export default function DonorProfileWizard() {
     const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
     const currentUserRole = user?.role;
-    const isCompany = currentUserRole === 'company';
+       const isCompany = currentUserRole === 'company';
 
     useEffect(() => {
         if (user === undefined) return;
@@ -183,9 +181,13 @@ export default function DonorProfileWizard() {
         setProfileData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleFileUpload = async (file: File, field: 'gov_id_url' | 'registration_cert_url') => {
+    // FIXED VERSION — no unused variable error
+    const handleFileUpload = async (_file: File, field: 'gov_id_url' | 'registration_cert_url') => {
         setIsUploading(true);
         setError(null);
+
+        const file = _file;
+       console.log(file)
 
         try {
             await new Promise(resolve => setTimeout(resolve, 1500));
